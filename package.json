@@ -1,0 +1,17 @@
+{
+  "name": "rws-viewer",
+  "version": "0.1.0",
+  "description": "A viewer to access RWS data through maps and point clouds",
+  "main": "app.js",
+  "dependencies": {},
+  "devDependencies": {
+    "gulp": "^3.9.1",
+    "leaflet": "^1.0.3",
+	"potree": "git://github.com/potree/potree.git#1.5RC"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": ""
+}
