@@ -3,15 +3,16 @@
   "version": "0.1.0",
   "description": "A viewer to access RWS data through maps and point clouds",
   "main": "app.js",
-  "dependencies": {},
-  "devDependencies": {
-    "gulp": "^3.9.1",
+  "dependencies": {
     "leaflet": "^1.0.3",
-	"potree": "git://github.com/potree/potree.git#1.5RC"
+    "potree": "git://github.com/potree/potree.git#1.5RC"
+  },
+  "devDependencies": {
+    "gulp": "^3.9.1"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "",
-  "license": ""
+  "author": "Chris Lucas",
+  "license": "MIT"
 }
