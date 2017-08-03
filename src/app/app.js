@@ -90,6 +90,14 @@ tileset.readyPromise.then(function() {
     viewer.camera.setView({ destination: dest });
 });
 
+viewer.selectedEntityChanged.addEventListener(function(entity) {
+    if (entity !== undefined) {
+        console.log(entity.id);
+    }
+});
+
+
+
 
 
 // var styles = [];
