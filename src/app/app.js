@@ -71,6 +71,10 @@ var tileset = viewer.scene.primitives.add(new Cesium.Cesium3DTileset({
     url: '../data/tileset.json'
 }));
 
+tileset.style = new Cesium.Cesium3DTileStyle({
+    pointSize : 3
+});
+
 tileset.readyPromise.then(function() {
     console.log('Loaded tileset');
     var bounding = tileset._root._boundingVolume;
@@ -82,5 +86,37 @@ tileset.readyPromise.then(function() {
             bounding._boundingSphere.radius * 2.2);
     viewer.camera.setView({ destination: dest });
 });
+
+
+
+// var styles = [];
+
+// function addStyle(name, style) {
+//     style.pointSize = Cesium.defaultValue(style.pointSize, 5.0);
+//     styles.push({
+//         name : name,
+//         style : style
+//     });
+// }
+
+// addStyle('No Style', {});
+// addStyle('Red', {
+//     color : "color('#ff0000')"
+// });
+
+// function setStyle(style) {
+//     return function() {
+//         tileset.style = new Cesium.Cesium3DTileStyle(style);
+//     };
+// }
+
+// var styleOptions = [];
+// for (var i = 0; i < styles.length; ++i) {
+//     var style = styles[i];
+//     styleOptions.push({
+//         text : style.name,
+//         onselect : setStyle(style.style)
+//     });
+// }
 
 // tileset.style = new Cesium.Cesium3DTileStyle(tileset, style);
