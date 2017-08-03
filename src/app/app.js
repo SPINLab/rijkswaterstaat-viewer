@@ -68,12 +68,24 @@ var baseLayerPicker = new Cesium.BaseLayerPicker('baseLayerPickerContainer', {
 
 
 var tileset = viewer.scene.primitives.add(new Cesium.Cesium3DTileset({
-    url: '../data/tileset.json'
+    url: '../data/pointcloud/tileset.json'
 }));
 
 tileset.style = new Cesium.Cesium3DTileStyle({
     pointSize : 3
 });
+
+// var footprint = Cesium.GeoJsonDataSource.load('../data/polygons/footprint.json', {
+//   stroke: Cesium.Color.HOTPINK,
+//   fill: Cesium.Color.PINK,
+//   strokeWidth: 3,
+//   markerSymbol: '?'
+// });
+// viewer.dataSources.add(footprint);
+// console.log(footprint);
+viewer.scene.globe.depthTestAgainstTerrain = true;
+Cesium.GeoJsonDataSource.clampToGround = true;
+viewer.dataSources.add(Cesium.GeoJsonDataSource.load('../data/polygons/footprint.json'));
 
 tileset.readyPromise.then(function() {
     console.log('Loaded tileset');
@@ -118,5 +130,3 @@ tileset.readyPromise.then(function() {
 //         onselect : setStyle(style.style)
 //     });
 // }
-
-// tileset.style = new Cesium.Cesium3DTileStyle(tileset, style);
