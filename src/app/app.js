@@ -83,6 +83,4 @@ tileset.readyPromise.then(function() {
     viewer.camera.setView({ destination: dest });
 });
 
-
-
 // tileset.style = new Cesium.Cesium3DTileStyle(tileset, style);

@@ -3,7 +3,9 @@
   "version": "0.1.0",
   "description": "A viewer to access RWS data through maps and point clouds",
   "main": "app.js",
-  "dependencies": {},
+  "dependencies": {
+    "cesium": "^1.36.0"
+  },
   "devDependencies": {
     "gulp": "^3.9.1"
   },
