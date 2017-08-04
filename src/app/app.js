@@ -61,6 +61,9 @@ var viewer = new Cesium.Viewer('cesiumContainer', {
 
 viewer.terrainProvider = terrainProvider;
 
+var heightOffset = 0.5;
+viewer.scene.globe.depthTestAgainstTerrain = true;
+
 var layers = viewer.imageryLayers;
 var baseLayerPicker = new Cesium.BaseLayerPicker('baseLayerPickerContainer', {
     globe : viewer.scene.globe,
@@ -90,7 +93,14 @@ tileset.readyPromise.then(function() {
     var dest = Cesium.Cartesian3.fromDegrees(
             cart.longitude * (180 / Math.PI),
             cart.latitude * (180 / Math.PI),
-            bounding._boundingSphere.radius * 2.2);
+            bounding._boundingSphere.radius * 2.2
+    );
+
+    var surface = Cesium.Cartesian3.fromRadians(cart.longitude, cart.latitude, 0.0);
+    var offset = Cesium.Cartesian3.fromRadians(cart.longitude, cart.latitude, heightOffset);
+    var translation = Cesium.Cartesian3.subtract(offset, surface, new Cesium.Cartesian3());
+    tileset.modelMatrix = Cesium.Matrix4.fromTranslation(translation);
+
     viewer.camera.setView({ destination: dest });
 });
 
