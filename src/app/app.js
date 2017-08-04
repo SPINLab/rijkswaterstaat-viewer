@@ -55,7 +55,8 @@ var viewer = new Cesium.Viewer('cesiumContainer', {
     timeline: false,
     vrButton: true,
     sceneModePicker: false,
-    navigationInstructionsInitiallyVisible: false
+    navigationInstructionsInitiallyVisible: false,
+    selectionIndicator : false
 });
 
 viewer.terrainProvider = terrainProvider;
@@ -75,8 +76,11 @@ tileset.style = new Cesium.Cesium3DTileStyle({
     pointSize : 3
 });
 
+var defaultColor = Cesium.Color.YELLOW;
 Cesium.GeoJsonDataSource.clampToGround = true;
-viewer.dataSources.add(Cesium.GeoJsonDataSource.load('../data/polygons/footprint.json'));
+viewer.dataSources.add(Cesium.GeoJsonDataSource.load('../data/polygons/footprint.json', {
+    fill: defaultColor
+}));
 
 tileset.readyPromise.then(function() {
     console.log('Loaded tileset');
@@ -90,9 +94,15 @@ tileset.readyPromise.then(function() {
     viewer.camera.setView({ destination: dest });
 });
 
+var lastPick;
+var highlightColor = Cesium.Color.RED;
 viewer.selectedEntityChanged.addEventListener(function(entity) {
-    if (entity !== undefined) {
-        console.log(entity.id);
+    if (entity !== lastPick) {
+        if (typeof lastPick !== 'undefined') {
+            lastPick.polygon.material = defaultColor;
+        }
+        entity.polygon.material = highlightColor;
+        lastPick = entity;
     }
 });
 
