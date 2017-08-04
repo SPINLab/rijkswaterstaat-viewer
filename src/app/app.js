@@ -85,12 +85,13 @@ viewer.dataSources.add(Cesium.GeoJsonDataSource.load('../data/polygons/footprint
     clampToGround: true
 }));
 
+var dest;
 tileset.readyPromise.then(function() {
     console.log('Loaded tileset');
     var bounding = tileset._root._boundingVolume;
     var center = bounding.boundingSphere.center;
     var cart = Cesium.Ellipsoid.WGS84.cartesianToCartographic(center);
-    var dest = Cesium.Cartesian3.fromDegrees(
+    dest = Cesium.Cartesian3.fromDegrees(
             cart.longitude * (180 / Math.PI),
             cart.latitude * (180 / Math.PI),
             bounding._boundingSphere.radius * 2.2
@@ -102,6 +103,11 @@ tileset.readyPromise.then(function() {
     tileset.modelMatrix = Cesium.Matrix4.fromTranslation(translation);
 
     viewer.camera.setView({ destination: dest });
+});
+
+viewer.homeButton.viewModel.command.beforeExecute.addEventListener(function(commandInfo) {
+    viewer.camera.setView({ destination: dest });
+	commandInfo.cancel = true;
 });
 
 var lastPick;
