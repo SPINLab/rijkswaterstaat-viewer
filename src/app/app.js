@@ -105,6 +105,11 @@ viewer.selectedEntityChanged.addEventListener(function(entity) {
             entity.polygon.material = highlightColor;
             lastPick = entity;
         }
+    } else {
+        if (typeof lastPick !== 'undefined') {
+            lastPick.polygon.material = defaultColor;
+            lastPick = undefined;
+        }
     }
 });
 
