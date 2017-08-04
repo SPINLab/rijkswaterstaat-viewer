@@ -97,12 +97,14 @@ tileset.readyPromise.then(function() {
 var lastPick;
 var highlightColor = Cesium.Color.RED;
 viewer.selectedEntityChanged.addEventListener(function(entity) {
-    if (entity !== lastPick) {
-        if (typeof lastPick !== 'undefined') {
-            lastPick.polygon.material = defaultColor;
+    if (typeof entity.polygon !== 'undefined') {
+        if (entity !== lastPick) {
+            if (typeof lastPick !== 'undefined') {
+                lastPick.polygon.material = defaultColor;
+            }
+            entity.polygon.material = highlightColor;
+            lastPick = entity;
         }
-        entity.polygon.material = highlightColor;
-        lastPick = entity;
     }
 });
 
