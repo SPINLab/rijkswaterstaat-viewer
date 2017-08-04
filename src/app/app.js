@@ -76,7 +76,7 @@ tileset.style = new Cesium.Cesium3DTileStyle({
     pointSize : 3
 });
 
-var defaultColor = Cesium.Color.YELLOW;
+var defaultColor = Cesium.Color.YELLOW.withAlpha(0.5);
 viewer.dataSources.add(Cesium.GeoJsonDataSource.load('../data/polygons/footprint.json', {
     fill: defaultColor,
     clampToGround: true
@@ -95,7 +95,7 @@ tileset.readyPromise.then(function() {
 });
 
 var lastPick;
-var highlightColor = Cesium.Color.RED;
+var highlightColor = Cesium.Color.RED.withAlpha(0.5);
 viewer.selectedEntityChanged.addEventListener(function(entity) {
     if (typeof entity.polygon !== 'undefined') {
         if (entity !== lastPick) {
