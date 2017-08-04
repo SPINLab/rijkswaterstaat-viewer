@@ -77,9 +77,9 @@ tileset.style = new Cesium.Cesium3DTileStyle({
 });
 
 var defaultColor = Cesium.Color.YELLOW;
-Cesium.GeoJsonDataSource.clampToGround = true;
 viewer.dataSources.add(Cesium.GeoJsonDataSource.load('../data/polygons/footprint.json', {
-    fill: defaultColor
+    fill: defaultColor,
+    clampToGround: true
 }));
 
 tileset.readyPromise.then(function() {
