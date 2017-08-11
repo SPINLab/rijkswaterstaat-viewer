@@ -59,6 +59,8 @@ var viewer = new Cesium.Viewer('cesiumContainer', {
     selectionIndicator : false
 });
 
+var entities = viewer.entities;
+
 viewer.terrainProvider = terrainProvider;
 
 var heightOffset = 0.5;
@@ -79,11 +81,24 @@ tileset.style = new Cesium.Cesium3DTileStyle({
     pointSize : 3
 });
 
+
+// var defaultColor = Cesium.Color.WHITE.withAlpha(0.1);
 var defaultColor = Cesium.Color.YELLOW.withAlpha(0.5);
-viewer.dataSources.add(Cesium.GeoJsonDataSource.load('../data/polygons/footprint.json', {
+
+var footprints = entities.add(new Cesium.Entity());
+var dataSource = new Cesium.GeoJsonDataSource();
+dataSource.load('../data/polygons/footprint.json', {
     fill: defaultColor,
     clampToGround: true
-}));
+}).then(function() {
+    var jsonEntities = dataSource._entityCollection._entities._array;
+    jsonEntities.forEach(currentItem => {
+        entities.add({
+            parent: footprints,
+            polygon: currentItem._polygon
+        });
+    });
+});
 
 var dest;
 tileset.readyPromise.then(function() {
@@ -113,13 +128,20 @@ viewer.homeButton.viewModel.command.beforeExecute.addEventListener(function(comm
 var lastPick;
 var highlightColor = Cesium.Color.RED.withAlpha(0.5);
 viewer.selectedEntityChanged.addEventListener(function(entity) {
-    if (typeof entity.polygon !== 'undefined') {
-        if (entity !== lastPick) {
+    if (typeof entity !== 'undefined') {
+        if (typeof entity.polygon !== 'undefined') {
+            if (entity !== lastPick) {
+                if (typeof lastPick !== 'undefined') {
+                    lastPick.polygon.material = defaultColor;
+                }
+                entity.polygon.material = highlightColor;
+                lastPick = entity;
+            }
+        } else {
             if (typeof lastPick !== 'undefined') {
                 lastPick.polygon.material = defaultColor;
+                lastPick = undefined;
             }
-            entity.polygon.material = highlightColor;
-            lastPick = entity;
         }
     } else {
         if (typeof lastPick !== 'undefined') {
@@ -129,7 +151,9 @@ viewer.selectedEntityChanged.addEventListener(function(entity) {
     }
 });
 
-
+footprintToggle.addEventListener("click", function() {
+    footprints.show = !footprints.show;
+})
 
 
 

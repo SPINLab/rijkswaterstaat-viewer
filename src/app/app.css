@@ -14,3 +14,10 @@ html, body, #cesiumContainer {
 .cesium-baseLayerPicker-dropDown {
     left: 0;
 }
+
+#footprintToggle {
+    position:absolute;
+    bottom:45px;
+    left:5px;
+    font-size: x-small;
+}
