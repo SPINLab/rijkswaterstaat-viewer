@@ -15,9 +15,16 @@ html, body, #cesiumContainer {
     left: 0;
 }
 
-#footprintToggle {
+#kunstwerkenToggle {
     position:absolute;
     bottom:45px;
+    left:5px;
+    font-size: x-small;
+}
+
+#beheerobjectenToggle {
+    position:absolute;
+    bottom:75px;
     left:5px;
     font-size: x-small;
 }

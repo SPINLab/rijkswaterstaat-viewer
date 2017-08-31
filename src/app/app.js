@@ -63,7 +63,7 @@ var entities = viewer.entities;
 
 viewer.terrainProvider = terrainProvider;
 
-var heightOffset = 0.5;
+var heightOffset = 1.5;
 viewer.scene.globe.depthTestAgainstTerrain = true;
 
 var layers = viewer.imageryLayers;
@@ -74,31 +74,50 @@ var baseLayerPicker = new Cesium.BaseLayerPicker('baseLayerPickerContainer', {
 
 
 var tileset = viewer.scene.primitives.add(new Cesium.Cesium3DTileset({
-    url: '../data/pointcloud/tileset.json'
+    url: '../data/pointcloud/cesium/tileset.json'
 }));
 
 tileset.style = new Cesium.Cesium3DTileStyle({
-    pointSize : 3
+    pointSize : 2
 });
-
 
 // var defaultColor = Cesium.Color.WHITE.withAlpha(0.1);
 var defaultColor = Cesium.Color.YELLOW.withAlpha(0.5);
 
-var footprints = entities.add(new Cesium.Entity());
-var dataSource = new Cesium.GeoJsonDataSource();
-dataSource.load('../data/polygons/footprint.json', {
+var kunstwerken = entities.add(new Cesium.Entity());
+var kunstwerkenSource = new Cesium.GeoJsonDataSource();
+kunstwerkenSource.load('../data/features/A10_kunstwerken.json', {
     fill: defaultColor,
     clampToGround: true
 }).then(function() {
-    var jsonEntities = dataSource._entityCollection._entities._array;
+    console.log('Loaded polygons');
+    var jsonEntities = kunstwerkenSource._entityCollection._entities._array;
     jsonEntities.forEach(currentItem => {
         entities.add({
-            parent: footprints,
-            polygon: currentItem._polygon
+            parent: kunstwerken,
+            polygon: currentItem.polygon,
+            properties: currentItem.properties
         });
     });
 });
+
+var beheerobjecten = entities.add(new Cesium.Entity());
+var beheerobjectenSource = new Cesium.GeoJsonDataSource();
+beheerobjectenSource.load('../data/features/A10_beheerobjecten.json', {
+    color: defaultColor,
+    clampToGround: true
+}).then(function() {
+    var jsonEntities = beheerobjectenSource._entityCollection._entities._array;
+    jsonEntities.forEach(currentItem => {
+        entities.add({
+            parent: beheerobjecten,
+            position: currentItem.position,
+            billboard: currentItem.billboard,
+            properties: currentItem.properties
+        });
+    });
+});
+beheerobjecten.show = false;
 
 var dest;
 tileset.readyPromise.then(function() {
@@ -151,38 +170,10 @@ viewer.selectedEntityChanged.addEventListener(function(entity) {
     }
 });
 
-footprintToggle.addEventListener("click", function() {
-    footprints.show = !footprints.show;
+kunstwerkenToggle.addEventListener("click", function() {
+    kunstwerken.show = !kunstwerken.show;
 })
 
-
-
-// var styles = [];
-
-// function addStyle(name, style) {
-//     style.pointSize = Cesium.defaultValue(style.pointSize, 5.0);
-//     styles.push({
-//         name : name,
-//         style : style
-//     });
-// }
-
-// addStyle('No Style', {});
-// addStyle('Red', {
-//     color : "color('#ff0000')"
-// });
-
-// function setStyle(style) {
-//     return function() {
-//         tileset.style = new Cesium.Cesium3DTileStyle(style);
-//     };
-// }
-
-// var styleOptions = [];
-// for (var i = 0; i < styles.length; ++i) {
-//     var style = styles[i];
-//     styleOptions.push({
-//         text : style.name,
-//         onselect : setStyle(style.style)
-//     });
-// }
+beheerobjectenToggle.addEventListener("click", function() {    
+    beheerobjecten.show = !beheerobjecten.show;
+})
