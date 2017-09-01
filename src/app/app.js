@@ -96,7 +96,13 @@ kunstwerkenSource.load('../data/features/A10_kunstwerken.json', {
         entities.add({
             parent: kunstwerken,
             polygon: currentItem.polygon,
-            properties: currentItem.properties
+            properties: currentItem.properties,
+            name:  currentItem.properties.NAAM,
+            description: "Omschrijving: " + currentItem.properties.OBJECTTEKS + "<br>" +
+                         "Diskcode: " + currentItem.properties.DISKCODE + "<br>" +
+                         "Onderhouder: " + currentItem.properties.ONDERHOUDE + "<br>" +
+                         "Beheerder: " + currentItem.properties.BEHEERDER + "<br>" +
+                         "Eigenaar: " + currentItem.properties.EIGENAAR
         });
     });
 });
@@ -109,11 +115,15 @@ beheerobjectenSource.load('../data/features/A10_beheerobjecten.json', {
 }).then(function() {
     var jsonEntities = beheerobjectenSource._entityCollection._entities._array;
     jsonEntities.forEach(currentItem => {
+        console.log(currentItem.properties);
         entities.add({
             parent: beheerobjecten,
             position: currentItem.position,
             billboard: currentItem.billboard,
-            properties: currentItem.properties
+            properties: currentItem.properties,
+            name:  currentItem.properties.naam,
+            description: "Omschrijving: " + currentItem.properties.omschrijving + "<br>" +
+                         "Archiefcode: " + currentItem.properties.archiefcode + "<br>"
         });
     });
 });
