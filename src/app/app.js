@@ -187,3 +187,7 @@ kunstwerkenToggle.addEventListener("click", function() {
 beheerobjectenToggle.addEventListener("click", function() {    
     beheerobjecten.show = !beheerobjecten.show;
 })
+
+pointcloudToggle.addEventListener("click", function() {    
+    tileset.show = !tileset.show;
+})

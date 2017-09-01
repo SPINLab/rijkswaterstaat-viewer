@@ -28,3 +28,10 @@ html, body, #cesiumContainer {
     left:5px;
     font-size: x-small;
 }
+
+#pointcloudToggle {
+    position:absolute;
+    bottom:105px;
+    left:5px;
+    font-size: x-small;
+}
