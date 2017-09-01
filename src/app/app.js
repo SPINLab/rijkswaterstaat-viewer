@@ -180,14 +180,26 @@ viewer.selectedEntityChanged.addEventListener(function(entity) {
     }
 });
 
-kunstwerkenToggle.addEventListener("click", function() {
-    kunstwerken.show = !kunstwerken.show;
-})
+kunstwerkenToggle.addEventListener('change', function() {
+    if(this.checked) {
+        kunstwerken.show = true;
+    } else {
+        kunstwerken.show = false;
+    }
+});
 
-beheerobjectenToggle.addEventListener("click", function() {    
-    beheerobjecten.show = !beheerobjecten.show;
-})
+beheerobjectenToggle.addEventListener('change', function() {
+    if(this.checked) {
+        beheerobjecten.show = true;
+    } else {
+        beheerobjecten.show = false;
+    }
+});
 
-pointcloudToggle.addEventListener("click", function() {    
-    tileset.show = !tileset.show;
-})
+pointcloudToggle.addEventListener('change', function() {
+    if(this.checked) {
+        tileset.show = true;
+    } else {
+        tileset.show = false;
+    }
+});

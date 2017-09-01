@@ -10,9 +10,26 @@
     </head>
     <body>
         <div id="cesiumContainer"></div>
-        <div><button type="button" id="pointcloudToggle" class="cesium-button">AHN3</button></div>
+        <!-- <div><button type="button" id="pointcloudToggle" class="cesium-button">AHN3</button></div>
         <div><button type="button" id="kunstwerkenToggle" class="cesium-button">Kunstwerken</button></div>
-        <div><button type="button" id="beheerobjectenToggle" class="cesium-button">Beheerobjecten</button></div>
+        <div><button type="button" id="beheerobjectenToggle" class="cesium-button">Beheerobjecten</button></div> -->
+        <div id="switches" class="switch-container">
+            <label class="switch">
+                <input type="checkbox" id="beheerobjectenToggle">
+                <span class="slider round"></span>
+            </label>
+            Beheerobjecten <br>
+            <label class="switch">
+                <input type="checkbox" id="kunstwerkenToggle" checked>
+                <span class="slider round"></span>
+            </label>
+            Kunstwerken <br>
+            <label class="switch">
+                <input type="checkbox" id="pointcloudToggle" checked>
+                <span class="slider round"></span>
+            </label>
+            AHN3
+        </div>
         <div id="baseLayerPickerContainer"</div>
         <script src="app/app.js"></script>
     </body>

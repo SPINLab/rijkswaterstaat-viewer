@@ -15,23 +15,83 @@ html, body, #cesiumContainer {
     left: 0;
 }
 
-#kunstwerkenToggle {
-    position:absolute;
-    bottom:45px;
-    left:5px;
-    font-size: x-small;
+.switch-container {
+    display: inline-block;
+    position: relative;
+    background: #303336;
+    border: 1px solid #444;
+    color: #edffff;
+    fill: #edffff;
+    border-radius: 4px;
+    padding: 5px 12px;
+    margin: 2px 3px;
+    line-height: 200%;
+    font-family: Verdana;
 }
 
-#beheerobjectenToggle {
-    position:absolute;
-    bottom:75px;
-    left:5px;
-    font-size: x-small;
+/* The switch - the box around the slider */
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 30px;
+    height: 17px;
+    margin-right: 5px;
 }
 
-#pointcloudToggle {
-    position:absolute;
-    bottom:105px;
-    left:5px;
-    font-size: x-small;
+/* Hide default HTML checkbox */
+.switch input {display:none;}
+
+/* The slider */
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 3px;
+    left: 0;
+    right: 0;
+    bottom: -3px;
+    background-color: #ccc;
+    -webkit-transition: .4s;
+    transition: .4s;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 13px;
+    width: 13px;
+    left: 2px;
+    bottom: 2px;
+    background-color: white;
+    -webkit-transition: .4s;
+    transition: .4s;
+}
+
+input:checked + .slider {
+    background-color: #48b;
+}
+
+input:focus + .slider {
+    box-shadow: 0 0 1px #48b;
+}
+
+input:checked + .slider:before {
+    -webkit-transform: translateX(13px);
+    -ms-transform: translateX(13px);
+    transform: translateX(13px);
+}
+
+/* Rounded sliders */
+.slider.round {
+    border-radius: 34px;
+}
+
+.slider.round:before {
+    border-radius: 50%;
+}
+
+#switches {
+    position: absolute;
+    bottom: 45px;
+    left: 5px;
+    font-size: small;
 }
