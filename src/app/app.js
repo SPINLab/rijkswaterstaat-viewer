@@ -115,7 +115,6 @@ beheerobjectenSource.load('../data/features/A10_beheerobjecten.json', {
 }).then(function() {
     var jsonEntities = beheerobjectenSource._entityCollection._entities._array;
     jsonEntities.forEach(currentItem => {
-        console.log(currentItem.properties);
         entities.add({
             parent: beheerobjecten,
             position: currentItem.position,
