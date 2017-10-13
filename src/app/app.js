@@ -153,6 +153,7 @@ viewer.homeButton.viewModel.command.beforeExecute.addEventListener(function(comm
 	commandInfo.cancel = true;
 });
 
+var query = "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> SELECT * WHERE {  ?sub ?pred ?obj . } LIMIT 10";
 var lastPick;
 var highlightColor = Cesium.Color.RED.withAlpha(0.5);
 viewer.selectedEntityChanged.addEventListener(function(entity) {
@@ -164,6 +165,17 @@ viewer.selectedEntityChanged.addEventListener(function(entity) {
                 }
                 entity.polygon.material = highlightColor;
                 lastPick = entity;
+
+                // entityData = SparQLQuery('localhost:8000', query);
+                // var entityData = {'foo': 'bar', 'oof': 'rab'};
+                // var description = "";
+                // for (var key in entityData) {
+                //     if (entityData.hasOwnProperty(key)) {
+                //         var value = entityData[key];
+                //         description += key + ": " + value + "<br>"
+                //     }
+                // }
+                // entity.description = description;
             }
         } else {
             if (typeof lastPick !== 'undefined') {

@@ -4,7 +4,8 @@
   "description": "A viewer to access RWS data through maps and point clouds",
   "main": "app.js",
   "dependencies": {
-    "cesium": "^1.36.0"
+    "cesium": "^1.36.0",
+    "whatwg-fetch": "^2.0.3"
   },
   "devDependencies": {
     "gulp": "^3.9.1"
