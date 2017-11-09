@@ -169,6 +169,20 @@ viewer.homeButton.viewModel.command.beforeExecute.addEventListener(function(comm
 	commandInfo.cancel = true;
 });
 
+// function SparQLQuery(serverUrl, query) {
+//     // http://148.251.106.132/linked_data/sparql?query=PREFIX%20rdf%3A%20%3Chttp%3A%2F%2Fwww.w3.org%2F1999%2F02%2F22-rdf-syntax-ns%23%3E%0D%0APREFIX%20rdfs%3A%20%3Chttp%3A%2F%2Fwww.w3.org%2F2000%2F01%2Frdf-schema%23%3E%0D%0ASELECT%20%2A%20WHERE%20%7B%0D%0A%20%20%3Fsub%20%3Fpred%20%3Fobj%20.%0D%0A%7D%20%0D%0ALIMIT%2010&resultFormat=json
+//     // let base64 = require('base-64');
+
+//     serverUrl = serverUrl[serverUrl.length - 1] !== '/' ? serverUrl + '/' : serverUrl;
+//     let url = encodeURI(serverUrl + 'sparql?query=' + query)
+
+//     fetch(url, {
+//         method:'GET'
+//     }).then(function(response) {
+//         return response.text()
+//     })
+// }
+
 var query = "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> SELECT * WHERE {  ?sub ?pred ?obj . } LIMIT 10";
 var lastPick;
 var highlightColor = Cesium.Color.RED.withAlpha(0.5);
