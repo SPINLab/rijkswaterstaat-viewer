@@ -63,8 +63,10 @@ var entities = viewer.entities;
 
 viewer.terrainProvider = terrainProvider;
 
-var heightOffset = 1.5;
+var pointcloudHeightOffset = 4;
+var meshHeightOffset = 50;
 viewer.scene.globe.depthTestAgainstTerrain = true;
+// viewer.scene.globe.enableLighting = true;
 
 var layers = viewer.imageryLayers;
 var baseLayerPicker = new Cesium.BaseLayerPicker('baseLayerPickerContainer', {
@@ -72,16 +74,18 @@ var baseLayerPicker = new Cesium.BaseLayerPicker('baseLayerPickerContainer', {
     imageryProviderViewModels : imageryViewModels
 });
 
-
-var tileset = viewer.scene.primitives.add(new Cesium.Cesium3DTileset({
-    url: '../data/pointcloud/cesium/tileset.json'
+var meshTileset = viewer.scene.primitives.add(new Cesium.Cesium3DTileset({
+    url: '../data/mesh/tileset.json'
 }));
 
-tileset.style = new Cesium.Cesium3DTileStyle({
+var pointcloudTileset = viewer.scene.primitives.add(new Cesium.Cesium3DTileset({
+    url: '../data/pointcloud/tileset.json'
+}));
+
+pointcloudTileset.style = new Cesium.Cesium3DTileStyle({
     pointSize : 2
 });
 
-// var defaultColor = Cesium.Color.WHITE.withAlpha(0.1);
 var defaultColor = Cesium.Color.YELLOW.withAlpha(0.5);
 
 var kunstwerken = entities.add(new Cesium.Entity());
@@ -129,9 +133,9 @@ beheerobjectenSource.load('../data/features/A10_beheerobjecten.json', {
 beheerobjecten.show = false;
 
 var dest;
-tileset.readyPromise.then(function() {
-    console.log('Loaded tileset');
-    var bounding = tileset._root._boundingVolume;
+pointcloudTileset.readyPromise.then(function() {
+    console.log('Loaded point cloud tileset');
+    var bounding = pointcloudTileset._root._boundingVolume;
     var center = bounding.boundingSphere.center;
     var cart = Cesium.Ellipsoid.WGS84.cartesianToCartographic(center);
     dest = Cesium.Cartesian3.fromDegrees(
@@ -141,11 +145,23 @@ tileset.readyPromise.then(function() {
     );
 
     var surface = Cesium.Cartesian3.fromRadians(cart.longitude, cart.latitude, 0.0);
-    var offset = Cesium.Cartesian3.fromRadians(cart.longitude, cart.latitude, heightOffset);
+    var offset = Cesium.Cartesian3.fromRadians(cart.longitude, cart.latitude, pointcloudHeightOffset);
     var translation = Cesium.Cartesian3.subtract(offset, surface, new Cesium.Cartesian3());
-    tileset.modelMatrix = Cesium.Matrix4.fromTranslation(translation);
+    pointcloudTileset.modelMatrix = Cesium.Matrix4.fromTranslation(translation);
 
     viewer.camera.setView({ destination: dest });
+});
+
+meshTileset.readyPromise.then(function() {
+    console.log('Loaded mesh tileset');
+    var bounding = meshTileset._root._boundingVolume;
+    var center = bounding.boundingSphere.center;
+    var cart = Cesium.Ellipsoid.WGS84.cartesianToCartographic(center);
+
+    var surface = Cesium.Cartesian3.fromRadians(cart.longitude, cart.latitude, 0.0);
+    var offset = Cesium.Cartesian3.fromRadians(cart.longitude, cart.latitude, meshHeightOffset);
+    var translation = Cesium.Cartesian3.subtract(offset, surface, new Cesium.Cartesian3());
+    meshTileset.modelMatrix = Cesium.Matrix4.fromTranslation(translation);
 });
 
 viewer.homeButton.viewModel.command.beforeExecute.addEventListener(function(commandInfo) {
@@ -209,8 +225,8 @@ beheerobjectenToggle.addEventListener('change', function() {
 
 pointcloudToggle.addEventListener('change', function() {
     if(this.checked) {
-        tileset.show = true;
+        pointcloudTileset.show = true;
     } else {
-        tileset.show = false;
+        pointcloudTileset.show = false;
     }
 });
