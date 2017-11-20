@@ -89,9 +89,25 @@ input:checked + .slider:before {
     border-radius: 50%;
 }
 
-#switches {
+#viz-switches {
     position: absolute;
     bottom: 35px;
     left: 5px;
     font-size: small;
+}
+
+#query-switches {
+    position: absolute;
+    bottom: 35px;
+    right: 5px;
+    font-size: small;
+}
+
+.cesium-infoBox {
+    background: #303336;
+}
+
+.cesium-infoBox-title {
+    background: #48b;
+    font-family: Verdana, Arial, sans-serif;
 }
