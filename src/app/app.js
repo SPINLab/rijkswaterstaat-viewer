@@ -86,7 +86,7 @@ const entities = viewer.entities;
 
 viewer.terrainProvider = terrainProvider;
 
-const pointcloudHeightOffset = 4;
+const pointcloudHeightOffset = 6;
 const meshHeightOffset = 50;
 viewer.scene.globe.depthTestAgainstTerrain = true;
 // viewer.scene.globe.enableLighting = true;
@@ -101,11 +101,19 @@ const meshTileset = viewer.scene.primitives.add(new Cesium.Cesium3DTileset({
     url: '../data/mesh/tileset.json'
 }));
 
-const pointcloudTileset = viewer.scene.primitives.add(new Cesium.Cesium3DTileset({
-    url: '../data/pointcloud/tileset.json'
+const ahn3Tileset = viewer.scene.primitives.add(new Cesium.Cesium3DTileset({
+    url: '../data/pointcloud/ahn3/tileset.json'
 }));
 
-pointcloudTileset.style = new Cesium.Cesium3DTileStyle({
+ahn3Tileset.style = new Cesium.Cesium3DTileStyle({
+    pointSize : 2
+});
+
+const ahn2Tileset = viewer.scene.primitives.add(new Cesium.Cesium3DTileset({
+    url: '../data/pointcloud/ahn2/tileset.json'
+}));
+
+ahn2Tileset.style = new Cesium.Cesium3DTileStyle({
     pointSize : 2
 });
 
@@ -180,9 +188,9 @@ bimSource.load('../data/features/bim_locations.json', {
 bim.show = false;
 
 let dest;
-pointcloudTileset.readyPromise.then(function() {
-    console.log('Loaded point cloud tileset');
-    const bounding = pointcloudTileset._root._boundingVolume;
+ahn3Tileset.readyPromise.then(function() {
+    console.log('Loaded ahn3 tileset');
+    const bounding = ahn3Tileset._root._boundingVolume;
     const center = bounding.boundingSphere.center;
     const cart = Cesium.Ellipsoid.WGS84.cartesianToCartographic(center);
     dest = Cesium.Cartesian3.fromDegrees(
@@ -194,9 +202,22 @@ pointcloudTileset.readyPromise.then(function() {
     const surface = Cesium.Cartesian3.fromRadians(cart.longitude, cart.latitude, 0.0);
     const offset = Cesium.Cartesian3.fromRadians(cart.longitude, cart.latitude, pointcloudHeightOffset);
     const translation = Cesium.Cartesian3.subtract(offset, surface, new Cesium.Cartesian3());
-    pointcloudTileset.modelMatrix = Cesium.Matrix4.fromTranslation(translation);
+    ahn3Tileset.modelMatrix = Cesium.Matrix4.fromTranslation(translation);
 
     viewer.camera.setView({ destination: dest });
+});
+
+ahn2Tileset.readyPromise.then(function() {
+    console.log('Loaded ahn2 tileset');
+    const bounding = ahn2Tileset._root._boundingVolume;
+    const center = bounding.boundingSphere.center;
+    const cart = Cesium.Ellipsoid.WGS84.cartesianToCartographic(center);
+
+    const surface = Cesium.Cartesian3.fromRadians(cart.longitude, cart.latitude, 0.0);
+    const offset = Cesium.Cartesian3.fromRadians(cart.longitude, cart.latitude, pointcloudHeightOffset);
+    const translation = Cesium.Cartesian3.subtract(offset, surface, new Cesium.Cartesian3());
+    ahn2Tileset.modelMatrix = Cesium.Matrix4.fromTranslation(translation);
+    ahn2Tileset.show = false;
 });
 
 meshTileset.readyPromise.then(function() {
@@ -538,11 +559,23 @@ bimToggle.addEventListener('change', function() {
     }
 });
 
-pointcloudToggle.addEventListener('change', function() {
+ahn3Toggle.addEventListener('change', function() {
     if(this.checked) {
-        pointcloudTileset.show = true;
+        ahn3Tileset.show = true;
+        ahn2Tileset.show = false;
+        ahn2Toggle.checked = false;
     } else {
-        pointcloudTileset.show = false;
+        ahn3Tileset.show = false;
+    }
+});
+
+ahn2Toggle.addEventListener('change', function() {
+    if(this.checked) {
+        ahn2Tileset.show = true;
+        ahn3Tileset.show = false;
+        ahn3Toggle.checked = false;
+    } else {
+        ahn2Tileset.show = false;
     }
 });
 
