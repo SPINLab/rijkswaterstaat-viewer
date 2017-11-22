@@ -121,7 +121,7 @@ Evaluating Query..
 </div>
 `
 
-const kunstwerken = entities.add(new Cesium.Entity());
+const kunstwerken = entities.add(new Cesium.Entity({name: "kunstwerken"}));
 const kunstwerkenSource = new Cesium.GeoJsonDataSource();
 kunstwerkenSource.load('../data/features/A10A1A6_kunstwerken.json', {
     fill: defaultColor,
@@ -140,7 +140,7 @@ kunstwerkenSource.load('../data/features/A10A1A6_kunstwerken.json', {
     });
 });
 
-const beheerobjecten = entities.add(new Cesium.Entity());
+const beheerobjecten = entities.add(new Cesium.Entity({name: "beheerobjecten"}));
 const beheerobjectenSource = new Cesium.GeoJsonDataSource();
 beheerobjectenSource.load('../data/features/A10_beheerobjecten.json', {
     color: defaultColor,
@@ -160,25 +160,24 @@ beheerobjectenSource.load('../data/features/A10_beheerobjecten.json', {
 });
 beheerobjecten.show = false;
 
-// const bim = entities.add(new Cesium.Entity());
-// const bimSource = new Cesium.GeoJsonDataSource();
-// bimSource.load('../data/features/bim_locations.json', {
-//     color: defaultColor,
-//     clampToGround: true
-// }).then(function() {
-//     const jsonEntities = bimSource.entities.values;
-//     jsonEntities.forEach(currentItem => {
-//         entities.add({
-//             parent: beheerobjecten,
-//             position: currentItem.position,
-//             billboard: currentItem.billboard,
-//             properties: currentItem.properties,
-//             name:  currentItem.properties.naam,
-//             description: "<>Show 3D Model<>"
-//         });
-//     });
-// });
-// bim.show = false;
+const bim = entities.add(new Cesium.Entity({name: "bim"}));
+const bimSource = new Cesium.GeoJsonDataSource();
+bimSource.load('../data/features/bim_locations.json', {
+    color: defaultColor,
+    clampToGround: true
+}).then(function() {
+    const jsonEntities = bimSource.entities.values;
+    jsonEntities.forEach(currentItem => {
+        entities.add({
+            parent: bim,
+            polygon: currentItem.polygon,
+            properties: currentItem.properties,
+            name:  currentItem.properties.naam,
+            description: loadingDescription
+        });
+    });
+});
+bim.show = false;
 
 let dest;
 pointcloudTileset.readyPromise.then(function() {
@@ -200,7 +199,6 @@ pointcloudTileset.readyPromise.then(function() {
     viewer.camera.setView({ destination: dest });
 });
 
-// const bimModels = viewer.scene.primitives.add(new Cesium.BillboardCollection());
 meshTileset.readyPromise.then(function() {
     console.log('Loaded mesh tileset');
     const bounding = meshTileset._root._boundingVolume;
@@ -214,49 +212,77 @@ meshTileset.readyPromise.then(function() {
     meshTileset.show = false;
 });
 
-// viewer.entities.add({
-//     // position : Cesium.Cartesian3(center.x, center.y),
-//     position : Cesium.Cartesian3.fromDegrees(5.130886, 52.322188),
-//     billboard : {
-//         // color : Cesium.Color.SKYBLUE,
-//         // pixelSize : 10,
-//         // outlineColor : Cesium.Color.YELLOW,
-//         // outlineWidth : 3,
-//         image : '../../img/bimarrow.png',
-//         scaleByDistance : undefined,
-//         heightReference : Cesium.HeightReference.CLAMP_TO_GROUND
-//     }
-// });
-
 viewer.homeButton.viewModel.command.beforeExecute.addEventListener(function(commandInfo) {
     viewer.camera.setView({ destination: dest });
 	commandInfo.cancel = true;
 });
 
-function SparQLQuery(serverUrl, query) {
-    // serverUrl = serverUrl[serverUrl.length - 1] !== '/' ? serverUrl + '/' : serverUrl;
-    // const url = serverUrl + '?query=' + encodeURIComponent(query);
-    const username = '';
-    const password = '';
+const auth = {'username': '', 'password': ''};
+function promptAuth() {
+    return new Promise(function(resolve, reject) {
+        if (auth.username !== '' || auth.password !== '') {
+            resolve();
+        } else {
+            const authPrompt = document.createElement("div");
+            authPrompt.className = "auth-prompt";
 
-    const headers = new Headers();
+            const submit = function () {
+                document.body.removeChild(authPrompt);
+                auth.username = usernameInput.value;
+                auth.password = passwordInput.value;
+                resolve();
+            }
 
-    headers.append('Authorization', 'Basic ' + base64.encode(username + ":" + password));
-    headers.append('Accept', 'application/json')
-    headers.append('Content-type', 'application/x-www-form-urlencoded')
+            const label = document.createElement("label");
+            label.textContent = "Please enter username and password:";
+            label.for = "auth-prompt-username";
+            authPrompt.appendChild(label);
 
-    const result = fetch(serverUrl, {
-        method:'POST',
-        headers: headers,
-        mode: 'cors',
-        body: 'query=' + query
-    }).then(function(response) {
-        return response.json();
-    }).then(function(j) {
-        return j;
+            const usernameInput = document.createElement("input");
+            usernameInput.id = "auth-prompt-username";
+            usernameInput.type = "text";
+            authPrompt.appendChild(usernameInput);
+
+            const passwordInput = document.createElement("input");
+            passwordInput.id = "auth-prompt-password";
+            passwordInput.type = "password";
+            passwordInput.addEventListener("keyup", function(e) {
+                if (e.keyCode == 13) submit();
+            }, false);
+            authPrompt.appendChild(passwordInput);
+
+            var button = document.createElement("button");
+            button.textContent = "Submit";
+            button.addEventListener("click", submit, false);
+            authPrompt.appendChild(button);
+
+            document.body.appendChild(authPrompt);
+        };
     })
+};
 
-    return result;
+function SparQLQuery(serverUrl, query) {
+    return new Promise(function(resolve, reject) {
+        const headers = new Headers();
+
+        headers.append('Authorization', 'Basic ' + base64.encode(auth.username + ":" + auth.password));
+        headers.append('Accept', 'application/json')
+        headers.append('Content-type', 'application/x-www-form-urlencoded')
+
+        const result = fetch(serverUrl, {
+            method:'POST',
+            headers: headers,
+            mode: 'cors',
+            body: 'query=' + query
+        }).then(function(response) {
+            return response.json();
+        }).then(function(j) {
+            resolve(j);
+        }).catch(function() {
+            auth.username = '';
+            auth.password = '';
+        });
+    });
 }
 
 function capitalizeFirstLetter(string) {
@@ -313,11 +339,11 @@ where {
 
     FILTER (
         geof:sfWithin(?geometryWKT, '''
-        <http://www.opengis.net/def/crs/OGC/1.3/CRS84>
         %s
 		'''^^geo:wktLiteral))
 }
 `
+
 const baseQueryPoint = `
 PREFIX geo: <http://www.opengis.net/ont/geosparql#>
 PREFIX geof: <http://www.opengis.net/def/function/geosparql/>
@@ -331,21 +357,17 @@ where {
 
     FILTER (
         geof:sfWithin(?geometryWKT, geof:buffer('''
-        <http://www.opengis.net/def/crs/OGC/1.3/CRS84>
         %s
 		'''^^geo:wktLiteral, 20)))
 }
 `
-const SparQLServer = 'http://148.251.106.132:8092/repositories/rwsld';
-const namespaces = ['22-rdf-syntax-ns#', 'beheerobject_', 'rdf-schema#', 'Geosparql#'];
 
-function updateDescription(entity) {
+function buildQuery(entity) {
     let wkt;
     if (typeof entity.polygon !== 'undefined') {
         const coords = ellipsoid.cartesianArrayToCartographicArray(entity.polygon.hierarchy.getValue().positions)
         wkt = polygonToWKT(coords);
     } else if (typeof entity.billboard !== 'undefined') {
-        console.log(entity.position.getValue());
         const coord = ellipsoid.cartesianToCartographic(entity.position.getValue())
         wkt = pointToWKT(coord)
     } else {
@@ -363,104 +385,130 @@ function updateDescription(entity) {
         graphs += 'from <http://www.rijkswaterstaat.nl/linked_data/ultimo/> ';
     }
 
+    let query = '';
     if (graphs.length === 0) {
         entity.description = 'No databases selected to query..';
-    } else {
-        let query;
-        if (typeof entity.polygon !== 'undefined') {
-            query = vsprintf(baseQueryPolygon, [graphs, wkt]);
-        } else if (typeof entity.billboard !== 'undefined') {
-            query = vsprintf(baseQueryPoint, [graphs, wkt]);
+        return query;
+    }
+
+    if (typeof entity.polygon !== 'undefined') {
+        query = vsprintf(baseQueryPolygon, [graphs, wkt]);
+    } else if (typeof entity.billboard !== 'undefined') {
+        query = vsprintf(baseQueryPoint, [graphs, wkt]);
+    }
+    return query;
+};
+
+const namespaces = ['22-rdf-syntax-ns#', 'rdf-schema#', 'geosparql#'];
+function buildDescription(entityData) {
+    let description = `
+    <div data-simplebar class="wrap">
+    <table class="table-fill">
+    <tbody class="table-hover">
+    `;
+
+    let currentGraph = '';
+    let currentObject = '';
+    let currentObjectValue = '';
+    let i = 1;
+    for (const result of entityData.results.bindings) {
+        let property = result['property']['value'].split('/');
+        property = property[property.length-1];
+        for (const s of namespaces) {
+            property = property.replace(s, '');
         }
 
-        SparQLQuery(SparQLServer, query).then(function(entityData) {
-            let description = `
-            <div data-simplebar class="wrap">
-            <table class="table-fill">
-            <tbody class="table-hover">
-            `;
+        let value = result['value']['value'].split('/');
+        if (value[0] === 'http:' && value[4] !== 'schema') {
+            value = '<a target="_blank" href="http://148.251.106.132:8092/resource/rws.' + currentGraph + '/' + value[value.length-1] + '">GraphDB</a>';
+        } else {
+            value = value[value.length-1];
+        }
 
-            let lastGraph = '';
-            let lastObject = '';
-            let i = 1;
-            for (const result of entityData.results.bindings) {
-                let property = result['property']['value'].split('/');
-                property = property[property.length-1];
-                for (const s of namespaces) {
-                    property = property.replace(s, '');
-                }
+        const graph = result['object']['value'].split('/')[4];
+        const object = result['object']['value'].split('/')[5];
 
-                let value = result['value']['value'].split('/');
-                if (value[0] === 'http:' && value[4] !== 'schema') {
-                    value = '<a target="_blank" href="http://148.251.106.132:8092/resource/rws.' + lastGraph + '/' + value[value.length-1] + '">GraphDB</a>';
-                } else {
-                    value = value[value.length-1];
-                    for (const s of namespaces) {
-                        value = value.replace(s, '');
-                    }
-                }
+        if (graph !== currentGraph) {
+            description += vsprintf('<thead class="graph-title"><tr><th class="text-left">%s</th><th class="text-left"></th></tr></thead>', [graph.toUpperCase()]);
+            currentGraph = graph;
+            i = 1;
+        }
 
-                const graph = result['object']['value'].split('/')[4];
-                const object = result['object']['value'].split('/')[5];
+        if (object !== currentObject) {
+            currentObjectValue = value;
+            description += vsprintf('<thead class="object-title"><tr><th class="text-left">%s</th><th class="text-left"></th></tr></thead>', [currentObjectValue]);
+            currentObject = object;
+            i += 1;
+        }
+        property = property.replace(currentObjectValue.toLowerCase() + '_', '');
 
-                if (graph !== lastGraph) {
-                    description += vsprintf('<thead class="graph-title"><tr><th class="text-left">%s</th><th class="text-left"></th></tr></thead>', [graph.toUpperCase()]);
-                    lastGraph = graph;
-                    i = 1;
-                }
-
-                if (object !== lastObject) {
-                    description += vsprintf('<thead class="object-title"><tr><th class="text-left">%s</th><th class="text-left"></th></tr></thead>', ["Object " + i]);
-                    lastObject = object;
-                    i += 1;
-                }
-
-                const entry = `
-                <tr>
-                <td class="text-left">%s</td>
-                <td class="text-left">%s</td>
-                </tr>
-                `
-                description += vsprintf(entry, [capitalizeFirstLetter(property), value])
-            };
-            description += `
-            </tbody>
-            </table>
-            </div>
-            `
-            entity.description = description;
-        });
-    }
+        const entry = `
+        <tr>
+        <td class="text-left">%s</td>
+        <td class="text-left">%s</td>
+        </tr>
+        `;
+        description += vsprintf(entry, [capitalizeFirstLetter(property), value]);
+    };
+    description += `
+    </tbody>
+    </table>
+    </div>
+    `;
+    return description;
 }
+
+const SparQLServer = 'http://148.251.106.132:8092/repositories/rwsld';
+function updateDescription(entity) {
+    const query = buildQuery(entity);
+    if (query !== '') {
+        promptAuth().then(function () {
+            SparQLQuery(SparQLServer, query).then(function(entityData) {
+                entity.description = buildDescription(entityData);
+            });
+        });
+    };
+};
 
 let lastPick;
 const highlightColor = Cesium.Color.RED.withAlpha(0.5);
 viewer.selectedEntityChanged.addEventListener(function(entity) {
     if (typeof entity !== 'undefined') {
-        // console.log(entity);
         if (typeof entity.polygon !== 'undefined') {
             if (entity !== lastPick) {
                 if (typeof lastPick !== 'undefined') {
                     lastPick.polygon.material = defaultColor;
                 }
-                entity.polygon.material = highlightColor;
                 lastPick = entity;
-                entity.description = loadingDescription;
 
+                if (entity.parent.name === "bim") {
+                    entity.polygon.show = false;
+                    meshTileset.show = true;
+                } else {
+                    entity.polygon.material = highlightColor;
+                }
+                entity.description = loadingDescription;
                 updateDescription(entity);
             }
         } else if (typeof entity.billboard !== 'undefined') {
-            console.log(entity);
             updateDescription(entity);
         } else {
             if (typeof lastPick !== 'undefined') {
                 lastPick.polygon.material = defaultColor;
+                if (lastPick.parent.name === 'bim') {
+                    lastPick.polygon.show = true;
+                    meshTileset.show = false;
+                }
                 lastPick = undefined;
             }
         }
     } else {
         if (typeof lastPick !== 'undefined') {
             lastPick.polygon.material = defaultColor;
+            if (lastPick.parent.name === 'bim') {
+                lastPick.polygon.show = true;
+                meshTileset.show = false;
+            }
             lastPick = undefined;
         }
     }
@@ -479,6 +527,14 @@ beheerobjectenToggle.addEventListener('change', function() {
         beheerobjecten.show = true;
     } else {
         beheerobjecten.show = false;
+    }
+});
+
+bimToggle.addEventListener('change', function() {
+    if(this.checked) {
+        bim.show = true;
+    } else {
+        bim.show = false;
     }
 });
 

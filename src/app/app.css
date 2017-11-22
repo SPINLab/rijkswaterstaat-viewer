@@ -111,3 +111,41 @@ input:checked + .slider:before {
     background: #48b;
     font-family: Verdana, Arial, sans-serif;
 }
+
+.auth-prompt {
+    position:fixed;
+    left: 50%;
+    top:50%;
+    margin-left:-100px;
+    padding:15px;
+    width:250px;
+    border: 1px solid #444;
+    color: #edffff;
+    background: #303336;
+    fill: #edffff;
+    border-radius: 4px;
+    font-family: Verdana, Arial, sans-serif;
+    font-size: smaller;
+}
+
+.auth-prompt label {
+    display:block;
+    margin-bottom:5px;
+}
+
+.auth-prompt input {
+    margin-bottom:10px;
+}
+
+.auth-prompt button {
+    background-color: #48b; /* Green */
+    border: none;
+    color: white;
+    margin-left: 15px;
+    padding: 5px 5px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-family: Verdana, Arial, sans-serif;
+    font-size: smaller;
+}
