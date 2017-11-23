@@ -351,10 +351,10 @@ const baseQueryPolygon = `
 PREFIX geo: <http://www.opengis.net/ont/geosparql#>
 PREFIX geof: <http://www.opengis.net/def/function/geosparql/>
 
-select ?object ?property ?value
+select ?subject ?property ?value
 %s
 where {
-    ?object geo:hasGeometry ?geometry;
+    ?subject geo:hasGeometry ?geometry;
           ?property ?value.
     ?geometry geo:asWKT ?geometryWKT .
 
@@ -369,10 +369,10 @@ const baseQueryPoint = `
 PREFIX geo: <http://www.opengis.net/ont/geosparql#>
 PREFIX geof: <http://www.opengis.net/def/function/geosparql/>
 
-select ?object ?property ?value
+select ?subject ?property ?value
 %s
 where {
-    ?object geo:hasGeometry ?geometry;
+    ?subject geo:hasGeometry ?geometry;
           ?property ?value.
     ?geometry geo:asWKT ?geometryWKT .
 
@@ -429,8 +429,8 @@ function buildDescription(entityData) {
     `;
 
     let currentGraph = '';
-    let currentObject = '';
-    let currentObjectValue = '';
+    let currentSubject = '';
+    let currentSubjectValue = '';
     let i = 1;
     for (const result of entityData.results.bindings) {
         let property = result['property']['value'].split('/');
@@ -446,8 +446,8 @@ function buildDescription(entityData) {
             value = value[value.length-1];
         }
 
-        const graph = result['object']['value'].split('/')[4];
-        const object = result['object']['value'].split('/')[5];
+        const graph = result['subject']['value'].split('/')[4];
+        const subject = result['subject']['value'].split('/')[5];
 
         if (graph !== currentGraph) {
             description += vsprintf('<thead class="graph-title"><tr><th class="text-left">%s</th><th class="text-left"></th></tr></thead>', [graph.toUpperCase()]);
@@ -455,13 +455,13 @@ function buildDescription(entityData) {
             i = 1;
         }
 
-        if (object !== currentObject) {
-            currentObjectValue = value;
-            description += vsprintf('<thead class="object-title"><tr><th class="text-left">%s</th><th class="text-left"></th></tr></thead>', [currentObjectValue]);
-            currentObject = object;
+        if (subject !== currentSubject) {
+            currentSubjectValue = value;
+            description += vsprintf('<thead class="subject-title"><tr><th class="text-left"> <a target="_blank" href="http://148.251.106.132:8092/resource/rws.%s/%s">%s</th><th class="text-left"></th></tr></thead>', [currentGraph, subject, currentSubjectValue]);
+            currentSubject = subject;
             i += 1;
         }
-        property = property.replace(currentObjectValue.toLowerCase() + '_', '');
+        property = property.replace(currentSubjectValue.toLowerCase() + '_', '');
 
         const entry = `
         <tr>
@@ -598,4 +598,72 @@ ultimoToggle.addEventListener('change', function() {
         viewer.selectedEntity.description = loadingDescription;
         updateDescription(viewer.selectedEntity);
     }
+});
+
+function zoomToRD(x, y) {
+    x = parseFloat(x);
+    y = parseFloat(y);
+    const wgs = rdnaptrans.Transform.rd2etrs(new rdnaptrans.Cartesian(x, y))
+    const destination = Cesium.Cartesian3.fromDegrees(
+        wgs.lambda,
+        wgs.phi,
+        300
+    );
+    viewer.camera.setView({ destination: destination });
+}
+
+function wktToRD(wkt){
+    const wktSplit = wkt.split(' ');
+    let x = wktSplit[1]
+    x = x.replace('(', '');
+    let y = wktSplit[2];
+    return {'x': parseFloat(x), 'y': parseFloat(y)};
+}
+
+const otlQuery = `
+PREFIX otl: <http://otl.rws.nl/otl#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX geo: <http://www.opengis.net/ont/geosparql#>
+PREFIX diskschema: <http://www.rijkswaterstaat.nl/linked_data/schema/disk/>
+
+select ?beheerobject ?label ?geometryWKT
+where {
+    ?objectdeel a %s ;
+     diskschema:objectdeel_beheerobject ?beheerobject .
+
+    ?beheerobject rdfs:label ?label .
+
+    ?beheerobject geo:hasGeometry ?geometry .
+
+    ?geometry geo:asWKT ?geometryWKT .
+} limit 10
+`
+const otlDict = {
+    'overbrugging': 'otl:OB00428',
+    'onderdoorgang': 'otl:OB00425',
+    'ponton': 'otl:OB01647'
+}
+queryButton.addEventListener('click', function () {
+    const x = document.getElementById("queryResults");
+    x.style.display = "block";
+    const query = vsprintf(otlQuery, [otlDict[querySelect.value]])
+    if (query !== '') {
+        promptAuth().then(function () {
+            SparQLQuery(SparQLServer, query).then(function(results) {
+                console.log(results);
+                let resultsHTML = '';
+                for (const result of results.results.bindings) {
+                    const label = result.label.value;
+                    const wkt = result.geometryWKT.value;
+                    const coordinates = wktToRD(wkt);
+
+                    resultsHTML += vsprintf('<button onClick="zoomToRD(%s, %s)">%s</button> <br>', [coordinates.x, coordinates.y, label]);
+                }
+
+                const div = document.getElementById('queryResults');
+                div.innerHTML = resultsHTML;
+            });
+        });
+    };
+    console.log(querySelect.value);
 });

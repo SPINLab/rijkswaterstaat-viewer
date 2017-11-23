@@ -137,15 +137,31 @@ input:checked + .slider:before {
     margin-bottom:10px;
 }
 
-.auth-prompt button {
+button {
     background-color: #48b; /* Green */
     border: none;
     color: white;
-    margin-left: 15px;
     padding: 5px 5px;
     text-align: center;
     text-decoration: none;
     display: inline-block;
     font-family: Verdana, Arial, sans-serif;
     font-size: smaller;
+}
+
+.auth-prompt button {
+    margin-left: 15px;
+}
+
+#queryPickerContainer {
+    position: absolute;
+    top: 55px;
+    left: 5px;
+    font-size: small;
+    padding: 2px 3px;
+    margin: 2px 3px;
+}
+
+#queryResults {
+    display: none;
 }
