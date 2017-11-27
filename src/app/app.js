@@ -44,7 +44,7 @@ const terrainProvider = new Cesium.CesiumTerrainProvider({
 });
 
 const Ortho25 = new Cesium.WebMapServiceImageryProvider({
-    url : 'https://geodata.nationaalgeoregister.nl/luchtfoto/wms?',
+    url : 'https://geodata.nationaalgeoregister.nl/luchtfoto/rgb/wms?',
     layers : 'Actueel_ortho25',
 });
 
