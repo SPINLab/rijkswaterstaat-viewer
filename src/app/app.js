@@ -439,11 +439,16 @@ function buildDescription(entityData) {
             property = property.replace(s, '');
         }
 
-        let value = result['value']['value'].split('/');
-        if (value[0] === 'http:' && value[4] !== 'schema') {
-            value = '<a target="_blank" href="http://148.251.106.132:8092/resource/rws.' + currentGraph + '/' + value[value.length-1] + '">GraphDB</a>';
+        let value;
+        let valueList = result['value']['value'].split('/');
+        if (valueList[0] === 'http:' && valueList[4] !== 'schema') {
+            value = '<a target="_blank" href="http://148.251.106.132:8092/resource/rws.' + currentGraph + '/' + valueList[valueList.length-1] + '">GraphDB</a>';
         } else {
-            value = value[value.length-1];
+            if (valueList.length > 4) {
+                value = valueList[valueList.length-1];
+            } else {
+                value = result['value']['value']
+            }
         }
 
         const graph = result['subject']['value'].split('/')[4];
