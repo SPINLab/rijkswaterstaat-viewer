@@ -655,7 +655,6 @@ queryButton.addEventListener('click', function () {
     if (query !== '') {
         promptAuth().then(function () {
             SparQLQuery(SparQLServer, query).then(function(results) {
-                console.log(results);
                 let resultsHTML = '';
                 for (const result of results.results.bindings) {
                     const label = result.label.value;
@@ -670,5 +669,4 @@ queryButton.addEventListener('click', function () {
             });
         });
     };
-    console.log(querySelect.value);
 });
