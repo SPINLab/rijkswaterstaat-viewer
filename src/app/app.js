@@ -117,6 +117,14 @@ ahn2Tileset.style = new Cesium.Cesium3DTileStyle({
     pointSize : 2
 });
 
+const zaltbommelBrugTileset = viewer.scene.primitives.add(new Cesium.Cesium3DTileset({
+    url: '../data/pointcloud/zaltbommel/tileset.json'
+}));
+
+zaltbommelBrugTileset.style = new Cesium.Cesium3DTileStyle({
+    pointSize : 2
+});
+
 const defaultColor = Cesium.Color.YELLOW.withAlpha(0.5);
 const loadingDescription = `
 <div class="loading">
@@ -218,6 +226,19 @@ ahn2Tileset.readyPromise.then(function() {
     const translation = Cesium.Cartesian3.subtract(offset, surface, new Cesium.Cartesian3());
     ahn2Tileset.modelMatrix = Cesium.Matrix4.fromTranslation(translation);
     ahn2Tileset.show = false;
+});
+
+zaltbommelBrugTileset.readyPromise.then(function() {
+    console.log('Loaded zaltbommel brug tileset');
+    const bounding = zaltbommelBrugTileset._root._boundingVolume;
+    const center = bounding.boundingSphere.center;
+    const cart = Cesium.Ellipsoid.WGS84.cartesianToCartographic(center);
+
+    const surface = Cesium.Cartesian3.fromRadians(cart.longitude, cart.latitude, 0.0);
+    const offset = Cesium.Cartesian3.fromRadians(cart.longitude, cart.latitude, pointcloudHeightOffset);
+    const translation = Cesium.Cartesian3.subtract(offset, surface, new Cesium.Cartesian3());
+    zaltbommelBrugTileset.modelMatrix = Cesium.Matrix4.fromTranslation(translation);
+    zaltbommelBrugTileset.show = true;
 });
 
 meshTileset.readyPromise.then(function() {
