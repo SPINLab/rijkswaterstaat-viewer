@@ -576,27 +576,15 @@ viewer.selectedEntityChanged.addEventListener(function(entity) {
 });
 
 kunstwerkenToggle.addEventListener('change', function() {
-    if(this.checked) {
-        kunstwerken.show = true;
-    } else {
-        kunstwerken.show = false;
-    }
+    kunstwerken.show = this.checked;
 });
 
 beheerobjectenToggle.addEventListener('change', function() {
-    if(this.checked) {
-        beheerobjecten.show = true;
-    } else {
-        beheerobjecten.show = false;
-    }
+    beheerobjecten.show = this.checked;
 });
 
 bimToggle.addEventListener('change', function() {
-    if(this.checked) {
-        bim.show = true;
-    } else {
-        bim.show = false;
-    }
+    bim.show = this.checked;
 });
 
 ahn3Toggle.addEventListener('change', function() {
