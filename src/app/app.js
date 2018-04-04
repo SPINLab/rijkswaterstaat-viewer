@@ -43,9 +43,14 @@ const terrainProvider = new Cesium.CesiumTerrainProvider({
 	requestWaterMask: false
 });
 
-const Ortho25 = new Cesium.WebMapServiceImageryProvider({
+const ortho2016 = new Cesium.WebMapServiceImageryProvider({
     url : 'https://geodata.nationaalgeoregister.nl/luchtfoto/rgb/wms?',
-    layers : 'Actueel_ortho25',
+    layers : '2016_ortho25',
+});
+
+const ortho2017 = new Cesium.WebMapServiceImageryProvider({
+    url : 'https://geodata.nationaalgeoregister.nl/luchtfoto/rgb/wms?',
+    layers : '2017_ortho25',
 });
 
 const BRT = new Cesium.WebMapTileServiceImageryProvider({
@@ -65,11 +70,20 @@ const BRT = new Cesium.WebMapTileServiceImageryProvider({
 const imageryViewModels = [];
 
 imageryViewModels.push(new Cesium.ProviderViewModel({
-    name : 'PDOK Luchtfoto',
+    name : 'PDOK Luchtfoto 2016',
     iconUrl : Cesium.buildModuleUrl('Widgets/Images/ImageryProviders/bingAerial.png'),
-    tooltip : 'PDOK Luchtfoto 25cm',
+    tooltip : 'PDOK Luchtfoto 2016 25cm',
     creationFunction : function() {
-        return Ortho25;
+        return ortho2016;
+    }
+}));
+
+imageryViewModels.push(new Cesium.ProviderViewModel({
+    name : 'PDOK Luchtfoto 2017',
+    iconUrl : Cesium.buildModuleUrl('Widgets/Images/ImageryProviders/bingAerial.png'),
+    tooltip : 'PDOK Luchtfoto 2017 25cm',
+    creationFunction : function() {
+        return ortho2017;
     }
 }));
 
