@@ -48,10 +48,38 @@ const ortho2016 = new Cesium.WebMapServiceImageryProvider({
     layers : '2016_ortho25',
 });
 
+// const ortho2016 = new Cesium.WebMapTileServiceImageryProvider({
+//     url : 'https://geodata.nationaalgeoregister.nl/luchtfoto/rgb/wmts?',
+//     layer : '2016_ortho25',
+//     style : 'default',
+//     format : 'image/png',
+//     tileMatrixSetID : 'EPSG:3857',
+//     tileMatrixLabels: ['00', '01', '02', '03', '04',
+//                        '05', '06', '07', '08', '09',
+//                        '10', '11', '12', '13', '14',
+//                        '15', '16', '17', '18', '19'],
+//     maximumLevel: 19
+//     // credit : new Cesium.Credit('PDOK')
+// });
+
 const ortho2017 = new Cesium.WebMapServiceImageryProvider({
     url : 'https://geodata.nationaalgeoregister.nl/luchtfoto/rgb/wms?',
     layers : '2017_ortho25',
 });
+
+// const ortho2017 = new Cesium.WebMapTileServiceImageryProvider({
+//     url : 'https://geodata.nationaalgeoregister.nl/luchtfoto/rgb/wmts?',
+//     layer : '2017_ortho25',
+//     style : 'default',
+//     format : 'image/png',
+//     tileMatrixSetID : 'EPSG:3857',
+//     tileMatrixLabels: ['00', '01', '02', '03', '04',
+//                        '05', '06', '07', '08', '09',
+//                        '10', '11', '12', '13', '14',
+//                        '15', '16', '17', '18', '19'],
+//     maximumLevel: 19
+//     // credit : new Cesium.Credit('PDOK')
+// });
 
 const BRT = new Cesium.WebMapTileServiceImageryProvider({
     url : 'https://geodata.nationaalgeoregister.nl/tiles/service/wmts?',
@@ -666,11 +694,13 @@ where {
     ?geometry geo:asWKT ?geometryWKT .
 } limit 10
 `
+
 const otlDict = {
     'overbrugging': 'otl:OB00428',
     'onderdoorgang': 'otl:OB00425',
     'ponton': 'otl:OB01647'
 }
+
 queryButton.addEventListener('click', function () {
     const x = document.getElementById("queryResults");
     x.style.display = "block";
