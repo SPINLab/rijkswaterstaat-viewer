@@ -130,7 +130,7 @@ viewer.terrainProvider = terrainProvider;
 
 const pointcloudHeightOffset = 6;
 const meshHeightOffset = 50;
-viewer.scene.globe.depthTestAgainstTerrain = true;
+viewer.scene.globe.depthTestAgainstTerrain = false;
 // viewer.scene.globe.enableLighting = true;
 
 const layers = viewer.imageryLayers;
@@ -722,4 +722,29 @@ queryButton.addEventListener('click', function () {
             });
         });
     };
+});
+
+
+const drawHelper = new DrawHelper(viewer);
+const toolbar = drawHelper.addToolbar(document.getElementById("toolbar"), {
+    buttons: ['extent']
+});
+
+let extentPrimitive = new DrawHelper.ExtentPrimitive({
+    extent: new Cesium.Rectangle(0, 0, 0, 0),
+    material:  new Cesium.Material({
+        fabric : {
+          type : 'Color',
+          uniforms : {
+            color : new Cesium.Color(1.0, 0.0, 0.0, 0.5)
+          }
+        }
+    })
+});
+viewer.scene.primitives.add(extentPrimitive);
+extentPrimitive.setEditable();
+
+toolbar.addListener('extentCreated', function(event) {
+    const extent = event.extent;
+    extentPrimitive.setExtent(extent);
 });
