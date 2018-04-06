@@ -5,15 +5,290 @@ document.body.appendChild(style);
 
 Cesium.BingMapsApi.defaultKey = '';
 
+const providers = {
+    terrain: {
+        cesiumWorld: Cesium.createWorldTerrain(),
+        stk: new Cesium.CesiumTerrainProvider({
+            url : 'https://assets.agi.com/stk-terrain/v1/tilesets/world/tiles',
+            requestWaterMask: false
+        }),
+        viewModels: [
+            new Cesium.ProviderViewModel({
+                name : 'Cesium World Terrain',
+                iconUrl : Cesium.buildModuleUrl('Widgets/Images/TerrainProviders/CesiumWorldTerrain.png'),
+                creationFunction : function() {
+                    return providers.terrain.cesiumWorld;
+                }
+            }),
+            new Cesium.ProviderViewModel({
+                name : 'STK World Terrain',
+                iconUrl : Cesium.buildModuleUrl('Widgets/Images/TerrainProviders/CesiumWorldTerrain.png'),
+                creationFunction : function() {
+                    return providers.terrain.stk;
+                }
+            })
+        ]
+    },
+    imagery: {
+        ortho2016wms: new Cesium.WebMapServiceImageryProvider({
+            url : 'https://geodata.nationaalgeoregister.nl/luchtfoto/rgb/wms?',
+            layers : '2016_ortho25',
+        }),
+        ortho2017wms: new Cesium.WebMapServiceImageryProvider({
+            url : 'https://geodata.nationaalgeoregister.nl/luchtfoto/rgb/wms?',
+            layers : '2017_ortho25',
+        }),
+        ortho2016wmts: new Cesium.WebMapTileServiceImageryProvider({
+            url : 'https://geodata.nationaalgeoregister.nl/luchtfoto/rgb/wmts?',
+            layer : '2016_ortho25',
+            style : 'default',
+            format : 'image/png',
+            tileMatrixSetID : 'EPSG:3857',
+            tileMatrixLabels: ['00', '01', '02', '03', '04',
+                               '05', '06', '07', '08', '09',
+                               '10', '11', '12', '13', '14',
+                               '15', '16', '17', '18', '19'],
+            maximumLevel: 19
+            // credit : new Cesium.Credit('PDOK')
+        }),
+        ortho2017wmts: new Cesium.WebMapTileServiceImageryProvider({
+            url : 'https://geodata.nationaalgeoregister.nl/luchtfoto/rgb/wmts?',
+            layer : '2017_ortho25',
+            style : 'default',
+            format : 'image/png',
+            tileMatrixSetID : 'EPSG:3857',
+            tileMatrixLabels: ['00', '01', '02', '03', '04',
+                               '05', '06', '07', '08', '09',
+                               '10', '11', '12', '13', '14',
+                               '15', '16', '17', '18', '19'],
+            maximumLevel: 19
+            // credit : new Cesium.Credit('PDOK')
+        }),
+        BRT: new Cesium.WebMapTileServiceImageryProvider({
+            url : 'https://geodata.nationaalgeoregister.nl/tiles/service/wmts?',
+            layer : 'brtachtergrondkaart',
+            style : 'default',
+            format : 'image/png',
+            tileMatrixSetID : 'EPSG:3857',
+            tileMatrixLabels: ['EPSG:3857:0', 'EPSG:3857:1', 'EPSG:3857:2', 'EPSG:3857:3', 'EPSG:3857:4',
+                               'EPSG:3857:5', 'EPSG:3857:6', 'EPSG:3857:7', 'EPSG:3857:8', 'EPSG:3857:9',
+                               'EPSG:3857:10', 'EPSG:3857:11', 'EPSG:3857:12', 'EPSG:3857:13', 'EPSG:3857:14',
+                               'EPSG:3857:15', 'EPSG:3857:16', 'EPSG:3857:17', 'EPSG:3857:18', 'EPSG:3857:19'],
+            maximumLevel: 19
+            // credit : new Cesium.Credit('PDOK')
+        }),
+        viewModels: [
+            new Cesium.ProviderViewModel({
+                name : 'PDOK Luchtfoto 2016',
+                iconUrl : Cesium.buildModuleUrl('Widgets/Images/ImageryProviders/bingAerial.png'),
+                tooltip : 'PDOK Luchtfoto 2016 25cm',
+                creationFunction : function() {
+                    return providers.imagery.ortho2016wms;
+                }
+            }),
+            new Cesium.ProviderViewModel({
+                name : 'PDOK Luchtfoto 2017',
+                iconUrl : Cesium.buildModuleUrl('Widgets/Images/ImageryProviders/bingAerial.png'),
+                tooltip : 'PDOK Luchtfoto 2017 25cm',
+                creationFunction : function() {
+                    return providers.imagery.ortho2017wms;
+                }
+            }),
+            new Cesium.ProviderViewModel({
+                name : 'BRT',
+                iconUrl : Cesium.buildModuleUrl('Widgets/Images/ImageryProviders/openStreetMap.png'),
+                tooltip : 'Basis Registratie Topografie',
+                creationFunction : function() {
+                    return providers.imagery.BRT;
+                }
+            })
+        ]
+    },
+    tilesets: {
+        mesh: {
+            meshTileset: new Cesium.Cesium3DTileset({
+                url: '../data/mesh/tileset.json',
+                show: false
+            }),
+            addTilesets: function() {
+                for (let tileset of Object.values(this)) {
+                    if (typeof tileset === "object") {
+                        viewer.scene.primitives.add(tileset);
+                    }
+                };
+            },
+            offsetTilesets: function(offset) {
+                for (let tileset of Object.values(this)) {
+                    if (typeof tileset === "object") {
+                        tileset.readyPromise.then(function() {
+                            const bounding = tileset._root._boundingVolume;
+                            const center = bounding.boundingSphere.center;
+                            const cart = Cesium.Ellipsoid.WGS84.cartesianToCartographic(center);
+
+                            const surface = Cesium.Cartesian3.fromRadians(cart.longitude, cart.latitude, 0.0);
+                            const offsetCart = Cesium.Cartesian3.fromRadians(cart.longitude, cart.latitude, offset);
+                            const translation = Cesium.Cartesian3.subtract(offsetCart, surface, new Cesium.Cartesian3());
+                            tileset.modelMatrix = Cesium.Matrix4.fromTranslation(translation);
+                        });
+                    };
+                };
+            }
+        },
+        pointcloud: {
+            ahn3Tileset:  new Cesium.Cesium3DTileset({
+                url: '../data/pointcloud/ahn3/tileset.json',
+                pointCloudShading: {
+                    attenuation: true,
+                    maximumAttenuation: 2.0
+                }
+            }),
+            ahn2Tileset: new Cesium.Cesium3DTileset({
+                url: '../data/pointcloud/ahn2/tileset.json',
+                show: false,
+                pointCloudShading: {
+                    attenuation: true,
+                    maximumAttenuation: 2.0
+                }
+            }),
+            zaltbommelBrugTileset:  new Cesium.Cesium3DTileset({
+                url: '../data/pointcloud/zaltbommel/tileset.json',
+                pointCloudShading: {
+                    attenuation: true,
+                    maximumAttenuation: 2.0
+                }
+            }),
+            addTilesets: function() {
+                for (let tileset of Object.values(this)) {
+                    if (typeof tileset === "object") {
+                        viewer.scene.primitives.add(tileset);
+                    };
+                };
+            },
+            offsetTilesets: function(offset) {
+                for (let tileset of Object.values(this)) {
+                    if (typeof tileset === "object") {
+                        tileset.readyPromise.then(function() {
+                            const bounding = tileset._root._boundingVolume;
+                            const center = bounding.boundingSphere.center;
+                            const cart = Cesium.Ellipsoid.WGS84.cartesianToCartographic(center);
+
+                            const surface = Cesium.Cartesian3.fromRadians(cart.longitude, cart.latitude, 0.0);
+                            const offsetCart = Cesium.Cartesian3.fromRadians(cart.longitude, cart.latitude, offset);
+                            const translation = Cesium.Cartesian3.subtract(offsetCart, surface, new Cesium.Cartesian3());
+                            tileset.modelMatrix = Cesium.Matrix4.fromTranslation(translation);
+                        });
+                    };
+                };
+            }
+        }
+    },
+    entities: {
+        kunstwerken: new Cesium.Entity({
+            name: "kunstwerken",
+            show: true
+        }),
+        beheerobjecten: new Cesium.Entity({
+            name: "beheerobjecten",
+            show: false
+        }),
+        bim: new Cesium.Entity({
+            name: "bim",
+            show: false
+        }),
+        addKunstwerken: function() {
+            const source = new Cesium.GeoJsonDataSource({
+                name: "kunstwerken"
+            });
+
+            source.load("../data/features/A10A1A6_kunstwerken.json", {
+                fill: defaultColor,
+                clampToGround: true
+            }).then(function() {
+                for (let entity of source.entities.values) {
+                    entities.add({
+                        parent: this.kunstwerken,
+                        polygon: entity.polygon,
+                        properties: entity.properties,
+                        name:  entity.properties.NAAM,
+                        description: loadingDescription
+                    });
+                }
+            }.bind(this));
+        },
+        addBeheerobjecten: function() {
+            const source = new Cesium.GeoJsonDataSource({
+                name: "beheerobjecten"
+            });
+
+            source.load("../data/features/A10_beheerobjecten.json", {
+                color: defaultColor,
+                clampToGround: true
+            }).then(function() {
+                for (let entity of source.entities.values) {
+                    entities.add({
+                        parent: this.beheerobjecten,
+                        position: entity.position,
+                        billboard: entity.billboard,
+                        properties: entity.properties,
+                        name:  entity.properties.naam,
+                        description: loadingDescription
+                    });
+                }
+            }.bind(this));
+        },
+        addBIM: function() {
+            const source = new Cesium.GeoJsonDataSource({
+                name: "BIM"
+            });
+
+            source.load("../data/features/bim_locations.json", {
+                fill: defaultColor,
+                clampToGround: true
+            }).then(function() {
+                for (let entity of source.entities.values) {
+                    entities.add({
+                        parent: this.bim,
+                        polygon: entity.polygon,
+                        properties: entity.properties,
+                        name:  entity.properties.naam,
+                        description: loadingDescription
+                    });
+                }
+            }.bind(this));
+        },
+        addAll: function () {
+            for (let loadFunction of Object.values(this)) {
+                if (typeof loadFunction === "function" && loadFunction.name !== "addAll") {
+                    loadFunction.call(this);
+                }
+            };
+        }
+    }
+};
+
 const viewer = new Cesium.Viewer('cesiumContainer', {
-    imageryProvider: false,
-    baseLayerPicker: false,
+    baseLayerPicker: true,
     animation: false,
     timeline: false,
     vrButton: true,
     sceneModePicker: false,
     navigationInstructionsInitiallyVisible: false,
-    selectionIndicator : false
+    selectionIndicator : false,
+    terrainProvider: providers.terrain.cesiumWorld,
+    terrainProviderViewModels: providers.terrain.viewModels,
+    imageryProvider: false,
+    imageryProviderViewModels: providers.imagery.viewModels
+});
+
+const homeView = {
+    x: 3902197,
+    y: 334558,
+    z: 5047216
+};
+viewer.camera.setView({ destination: homeView});
+viewer.homeButton.viewModel.command.beforeExecute.addEventListener(function(commandInfo) {
+    viewer.camera.setView({ destination: homeView });
+	commandInfo.cancel = true;
 });
 
 // Style the infobox
@@ -38,135 +313,11 @@ frame.addEventListener('load', function () {
 }, false);
 
 
-const terrainProvider = new Cesium.CesiumTerrainProvider({
-    url : 'https://assets.agi.com/stk-terrain/v1/tilesets/world/tiles',
-	requestWaterMask: false
-});
-
-const ortho2016 = new Cesium.WebMapServiceImageryProvider({
-    url : 'https://geodata.nationaalgeoregister.nl/luchtfoto/rgb/wms?',
-    layers : '2016_ortho25',
-});
-
-// const ortho2016 = new Cesium.WebMapTileServiceImageryProvider({
-//     url : 'https://geodata.nationaalgeoregister.nl/luchtfoto/rgb/wmts?',
-//     layer : '2016_ortho25',
-//     style : 'default',
-//     format : 'image/png',
-//     tileMatrixSetID : 'EPSG:3857',
-//     tileMatrixLabels: ['00', '01', '02', '03', '04',
-//                        '05', '06', '07', '08', '09',
-//                        '10', '11', '12', '13', '14',
-//                        '15', '16', '17', '18', '19'],
-//     maximumLevel: 19
-//     // credit : new Cesium.Credit('PDOK')
-// });
-
-const ortho2017 = new Cesium.WebMapServiceImageryProvider({
-    url : 'https://geodata.nationaalgeoregister.nl/luchtfoto/rgb/wms?',
-    layers : '2017_ortho25',
-});
-
-// const ortho2017 = new Cesium.WebMapTileServiceImageryProvider({
-//     url : 'https://geodata.nationaalgeoregister.nl/luchtfoto/rgb/wmts?',
-//     layer : '2017_ortho25',
-//     style : 'default',
-//     format : 'image/png',
-//     tileMatrixSetID : 'EPSG:3857',
-//     tileMatrixLabels: ['00', '01', '02', '03', '04',
-//                        '05', '06', '07', '08', '09',
-//                        '10', '11', '12', '13', '14',
-//                        '15', '16', '17', '18', '19'],
-//     maximumLevel: 19
-//     // credit : new Cesium.Credit('PDOK')
-// });
-
-const BRT = new Cesium.WebMapTileServiceImageryProvider({
-    url : 'https://geodata.nationaalgeoregister.nl/tiles/service/wmts?',
-    layer : 'brtachtergrondkaart',
-    style : 'default',
-    format : 'image/png',
-    tileMatrixSetID : 'EPSG:3857',
-    tileMatrixLabels: ['EPSG:3857:0', 'EPSG:3857:1', 'EPSG:3857:2', 'EPSG:3857:3', 'EPSG:3857:4',
-                       'EPSG:3857:5', 'EPSG:3857:6', 'EPSG:3857:7', 'EPSG:3857:8', 'EPSG:3857:9',
-                       'EPSG:3857:10', 'EPSG:3857:11', 'EPSG:3857:12', 'EPSG:3857:13', 'EPSG:3857:14',
-                       'EPSG:3857:15', 'EPSG:3857:16', 'EPSG:3857:17', 'EPSG:3857:18', 'EPSG:3857:19'],
-    maximumLevel: 19
-    // credit : new Cesium.Credit('PDOK')
-});
-
-const imageryViewModels = [];
-
-imageryViewModels.push(new Cesium.ProviderViewModel({
-    name : 'PDOK Luchtfoto 2016',
-    iconUrl : Cesium.buildModuleUrl('Widgets/Images/ImageryProviders/bingAerial.png'),
-    tooltip : 'PDOK Luchtfoto 2016 25cm',
-    creationFunction : function() {
-        return ortho2016;
-    }
-}));
-
-imageryViewModels.push(new Cesium.ProviderViewModel({
-    name : 'PDOK Luchtfoto 2017',
-    iconUrl : Cesium.buildModuleUrl('Widgets/Images/ImageryProviders/bingAerial.png'),
-    tooltip : 'PDOK Luchtfoto 2017 25cm',
-    creationFunction : function() {
-        return ortho2017;
-    }
-}));
-
-imageryViewModels.push(new Cesium.ProviderViewModel({
-    name : 'BRT',
-    iconUrl : Cesium.buildModuleUrl('Widgets/Images/ImageryProviders/openStreetMap.png'),
-    tooltip : 'Basis Registratie Topografie',
-    creationFunction : function() {
-        return BRT;
-    }
-}));
-
-const entities = viewer.entities;
-
-viewer.terrainProvider = terrainProvider;
 
 const pointcloudHeightOffset = 6;
 const meshHeightOffset = 50;
 viewer.scene.globe.depthTestAgainstTerrain = false;
 // viewer.scene.globe.enableLighting = true;
-
-const layers = viewer.imageryLayers;
-const baseLayerPicker = new Cesium.BaseLayerPicker('baseLayerPickerContainer', {
-    globe : viewer.scene.globe,
-    imageryProviderViewModels : imageryViewModels
-});
-
-const meshTileset = viewer.scene.primitives.add(new Cesium.Cesium3DTileset({
-    url: '../data/mesh/tileset.json'
-}));
-
-const ahn3Tileset = viewer.scene.primitives.add(new Cesium.Cesium3DTileset({
-    url: '../data/pointcloud/ahn3/tileset.json'
-}));
-
-ahn3Tileset.style = new Cesium.Cesium3DTileStyle({
-    pointSize : 2
-});
-
-const ahn2Tileset = viewer.scene.primitives.add(new Cesium.Cesium3DTileset({
-    url: '../data/pointcloud/ahn2/tileset.json'
-}));
-
-ahn2Tileset.style = new Cesium.Cesium3DTileStyle({
-    pointSize : 2
-});
-
-const zaltbommelBrugTileset = viewer.scene.primitives.add(new Cesium.Cesium3DTileset({
-    url: '../data/pointcloud/zaltbommel/tileset.json'
-}));
-
-zaltbommelBrugTileset.style = new Cesium.Cesium3DTileStyle({
-    pointSize : 2
-});
-
 const defaultColor = Cesium.Color.YELLOW.withAlpha(0.5);
 const loadingDescription = `
 <div class="loading">
@@ -179,127 +330,11 @@ Evaluating Query..
 </div>
 `
 
-const kunstwerken = entities.add(new Cesium.Entity({name: "kunstwerken"}));
-const kunstwerkenSource = new Cesium.GeoJsonDataSource();
-kunstwerkenSource.load('../data/features/A10A1A6_kunstwerken.json', {
-    fill: defaultColor,
-    clampToGround: true
-}).then(function() {
-    console.log('Loaded polygons');
-    const jsonEntities = kunstwerkenSource.entities.values;
-    jsonEntities.forEach(currentItem => {
-        entities.add({
-            parent: kunstwerken,
-            polygon: currentItem.polygon,
-            properties: currentItem.properties,
-            name:  currentItem.properties.NAAM,
-            description: loadingDescription
-        });
-    });
-});
-
-const beheerobjecten = entities.add(new Cesium.Entity({name: "beheerobjecten"}));
-const beheerobjectenSource = new Cesium.GeoJsonDataSource();
-beheerobjectenSource.load('../data/features/A10_beheerobjecten.json', {
-    color: defaultColor,
-    clampToGround: true
-}).then(function() {
-    const jsonEntities = beheerobjectenSource.entities.values;
-    jsonEntities.forEach(currentItem => {
-        entities.add({
-            parent: beheerobjecten,
-            position: currentItem.position,
-            billboard: currentItem.billboard,
-            properties: currentItem.properties,
-            name:  currentItem.properties.naam,
-            description: loadingDescription
-        });
-    });
-});
-beheerobjecten.show = false;
-
-const bim = entities.add(new Cesium.Entity({name: "bim"}));
-const bimSource = new Cesium.GeoJsonDataSource();
-bimSource.load('../data/features/bim_locations.json', {
-    color: defaultColor,
-    clampToGround: true
-}).then(function() {
-    const jsonEntities = bimSource.entities.values;
-    jsonEntities.forEach(currentItem => {
-        entities.add({
-            parent: bim,
-            polygon: currentItem.polygon,
-            properties: currentItem.properties,
-            name:  currentItem.properties.naam,
-            description: loadingDescription
-        });
-    });
-});
-bim.show = false;
-
-let dest;
-ahn3Tileset.readyPromise.then(function() {
-    console.log('Loaded ahn3 tileset');
-    const bounding = ahn3Tileset._root._boundingVolume;
-    const center = bounding.boundingSphere.center;
-    const cart = Cesium.Ellipsoid.WGS84.cartesianToCartographic(center);
-    dest = Cesium.Cartesian3.fromDegrees(
-            cart.longitude * (180 / Math.PI),
-            cart.latitude * (180 / Math.PI),
-            bounding._boundingSphere.radius * 2.2
-    );
-
-    const surface = Cesium.Cartesian3.fromRadians(cart.longitude, cart.latitude, 0.0);
-    const offset = Cesium.Cartesian3.fromRadians(cart.longitude, cart.latitude, pointcloudHeightOffset);
-    const translation = Cesium.Cartesian3.subtract(offset, surface, new Cesium.Cartesian3());
-    ahn3Tileset.modelMatrix = Cesium.Matrix4.fromTranslation(translation);
-
-    viewer.camera.setView({ destination: dest });
-});
-
-ahn2Tileset.readyPromise.then(function() {
-    console.log('Loaded ahn2 tileset');
-    const bounding = ahn2Tileset._root._boundingVolume;
-    const center = bounding.boundingSphere.center;
-    const cart = Cesium.Ellipsoid.WGS84.cartesianToCartographic(center);
-
-    const surface = Cesium.Cartesian3.fromRadians(cart.longitude, cart.latitude, 0.0);
-    const offset = Cesium.Cartesian3.fromRadians(cart.longitude, cart.latitude, pointcloudHeightOffset);
-    const translation = Cesium.Cartesian3.subtract(offset, surface, new Cesium.Cartesian3());
-    ahn2Tileset.modelMatrix = Cesium.Matrix4.fromTranslation(translation);
-    ahn2Tileset.show = false;
-});
-
-zaltbommelBrugTileset.readyPromise.then(function() {
-    console.log('Loaded zaltbommel brug tileset');
-    const bounding = zaltbommelBrugTileset._root._boundingVolume;
-    const center = bounding.boundingSphere.center;
-    const cart = Cesium.Ellipsoid.WGS84.cartesianToCartographic(center);
-
-    const surface = Cesium.Cartesian3.fromRadians(cart.longitude, cart.latitude, 0.0);
-    const offset = Cesium.Cartesian3.fromRadians(cart.longitude, cart.latitude, pointcloudHeightOffset);
-    const translation = Cesium.Cartesian3.subtract(offset, surface, new Cesium.Cartesian3());
-    zaltbommelBrugTileset.modelMatrix = Cesium.Matrix4.fromTranslation(translation);
-    zaltbommelBrugTileset.show = true;
-});
-
-meshTileset.readyPromise.then(function() {
-    console.log('Loaded mesh tileset');
-    const bounding = meshTileset._root._boundingVolume;
-    const center = bounding.boundingSphere.center;
-    const cart = Cesium.Ellipsoid.WGS84.cartesianToCartographic(center);
-
-    const surface = Cesium.Cartesian3.fromRadians(cart.longitude, cart.latitude, 0.0);
-    const offset = Cesium.Cartesian3.fromRadians(cart.longitude, cart.latitude, meshHeightOffset);
-    const translation = Cesium.Cartesian3.subtract(offset, surface, new Cesium.Cartesian3());
-    meshTileset.modelMatrix = Cesium.Matrix4.fromTranslation(translation);
-    meshTileset.show = false;
-});
-
-viewer.homeButton.viewModel.command.beforeExecute.addEventListener(function(commandInfo) {
-    viewer.camera.setView({ destination: dest });
-	commandInfo.cancel = true;
-});
+providers.tilesets.pointcloud.addTilesets();
+providers.tilesets.pointcloud.offsetTilesets(6);
+providers.tilesets.mesh.addTilesets();
+providers.tilesets.mesh.offsetTilesets(50);
+providers.entities.addAll();
 
 const auth = {'username': '', 'password': ''};
 function promptAuth() {
