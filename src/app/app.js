@@ -205,7 +205,7 @@ const providers = {
                 clampToGround: true
             }).then(function() {
                 for (let entity of source.entities.values) {
-                    entities.add({
+                    viewer.entities.add({
                         parent: this.kunstwerken,
                         polygon: entity.polygon,
                         properties: entity.properties,
@@ -225,7 +225,7 @@ const providers = {
                 clampToGround: true
             }).then(function() {
                 for (let entity of source.entities.values) {
-                    entities.add({
+                    viewer.entities.add({
                         parent: this.beheerobjecten,
                         position: entity.position,
                         billboard: entity.billboard,
@@ -246,7 +246,7 @@ const providers = {
                 clampToGround: true
             }).then(function() {
                 for (let entity of source.entities.values) {
-                    entities.add({
+                    viewer.entities.add({
                         parent: this.bim,
                         polygon: entity.polygon,
                         properties: entity.properties,
@@ -311,7 +311,6 @@ frame.addEventListener('load', function () {
     cssLink.type = "text/css";
     viewer.infoBox.frame.contentDocument.head.appendChild(cssLink);
 }, false);
-
 
 
 const pointcloudHeightOffset = 6;
@@ -639,34 +638,34 @@ viewer.selectedEntityChanged.addEventListener(function(entity) {
 });
 
 kunstwerkenToggle.addEventListener('change', function() {
-    kunstwerken.show = this.checked;
+    providers.entities.kunstwerken.show = this.checked;
 });
 
 beheerobjectenToggle.addEventListener('change', function() {
-    beheerobjecten.show = this.checked;
+    providers.entities.beheerobjecten.show = this.checked;
 });
 
 bimToggle.addEventListener('change', function() {
-    bim.show = this.checked;
+    providers.entities.bim.show = this.checked;
 });
 
 ahn3Toggle.addEventListener('change', function() {
     if(this.checked) {
-        ahn3Tileset.show = true;
-        ahn2Tileset.show = false;
+        providers.tilesets.pointcloud.ahn3Tileset.show = true;
+        providers.tilesets.pointcloud.ahn2Tileset.show = false;
         ahn2Toggle.checked = false;
     } else {
-        ahn3Tileset.show = false;
+        providers.tilesets.pointcloud.ahn3Tileset.show = false;
     }
 });
 
 ahn2Toggle.addEventListener('change', function() {
     if(this.checked) {
-        ahn2Tileset.show = true;
-        ahn3Tileset.show = false;
+        providers.tilesets.pointcloud.ahn2Tileset.show = true;
+        providers.tilesets.pointcloud.ahn3Tileset.show = false;
         ahn3Toggle.checked = false;
     } else {
-        ahn2Tileset.show = false;
+        providers.tilesets.pointcloud.ahn2Tileset.show = false;
     }
 });
 
