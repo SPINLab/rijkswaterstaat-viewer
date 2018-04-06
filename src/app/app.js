@@ -606,7 +606,7 @@ viewer.selectedEntityChanged.addEventListener(function(entity) {
 
                 if (entity.parent.name === "bim") {
                     entity.polygon.show = false;
-                    meshTileset.show = true;
+                    providers.tilesets.mesh.meshTileset.show = true;
                 } else {
                     entity.polygon.material = highlightColor;
                 }
@@ -620,7 +620,7 @@ viewer.selectedEntityChanged.addEventListener(function(entity) {
                 lastPick.polygon.material = defaultColor;
                 if (lastPick.parent.name === 'bim') {
                     lastPick.polygon.show = true;
-                    meshTileset.show = false;
+                    providers.tilesets.mesh.meshTileset.show = false;
                 }
                 lastPick = undefined;
             }
@@ -630,7 +630,7 @@ viewer.selectedEntityChanged.addEventListener(function(entity) {
             lastPick.polygon.material = defaultColor;
             if (lastPick.parent.name === 'bim') {
                 lastPick.polygon.show = true;
-                meshTileset.show = false;
+                providers.tilesets.mesh.meshTileset.show = false;
             }
             lastPick = undefined;
         }
