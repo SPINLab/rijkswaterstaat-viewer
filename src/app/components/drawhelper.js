@@ -8,10 +8,11 @@
  *
  */
 
-var DrawHelper = (function() {
+const DrawHelper = (function() {
 
     // static variables
-    var ellipsoid = Cesium.Ellipsoid.WGS84;
+    const ellipsoid = Cesium.Ellipsoid.WGS84;
+    let drawedPrimitives = [];
 
     // constructor
     function _(cesiumWidget) {
@@ -91,9 +92,9 @@ var DrawHelper = (function() {
         // highlight polygon when mouse is entering
         setListener(surface, 'mouseMove', function(position) {
             surface.setHighlighted(true);
-            if(!surface._editMode) {
-                _self._tooltip.showAt(position, "Click to edit this shape");
-            }
+            // if(!surface._editMode) {
+            //     _self._tooltip.showAt(position, "Click to edit this shape");
+            // }
         });
         // hide the highlighting when mouse is leaving the polygon
         setListener(surface, 'mouseOut', function(position) {
@@ -391,6 +392,7 @@ var DrawHelper = (function() {
         // create one common billboard collection for all billboards
         var b = new Cesium.BillboardCollection();
         this._scene.primitives.add(b);
+        drawedPrimitives.push(b);
         this._billboards = b;
         // keep an ordered list of billboards
         this._orderedBillboards = [];
@@ -469,14 +471,14 @@ var DrawHelper = (function() {
                     callbacks.onClick(getIndex());
                 });
             }
-            if(callbacks.tooltip) {
-                setListener(billboard, 'mouseMove', function(position) {
-                    _self._drawHelper._tooltip.showAt(position, callbacks.tooltip());
-                });
-                setListener(billboard, 'mouseOut', function(position) {
-                    _self._drawHelper._tooltip.setVisible(false);
-                });
-            }
+            // if(callbacks.tooltip) {
+            //     setListener(billboard, 'mouseMove', function(position) {
+            //         _self._drawHelper._tooltip.showAt(position, callbacks.tooltip());
+            //     });
+            //     setListener(billboard, 'mouseOut', function(position) {
+            //         _self._drawHelper._tooltip.setVisible(false);
+            //     });
+            // }
         }
 
         return billboard;
@@ -556,7 +558,16 @@ var DrawHelper = (function() {
         var mouseHandler = new Cesium.ScreenSpaceEventHandler(scene.canvas);
 
         function updateExtent(value) {
-            if(extent == null) { extent = new DrawHelper.ExtentPrimitive({ extent : value, material : options.material, }); extent.asynchronous = false; primitives.add(extent); } extent.setExtent(value);
+            if(extent == null) {
+                extent = new DrawHelper.ExtentPrimitive({
+                    extent : value,
+                    material : options.material
+                });
+                extent.asynchronous = false;
+                primitives.add(extent);
+                drawedPrimitives.push(extent);
+            }
+            extent.setExtent(value);
             extent.rectangle = value;
             // update the markers
             var corners = getExtentCorners(value);
@@ -587,22 +598,25 @@ var DrawHelper = (function() {
                     }
                 }
             }
+            scene.requestRender();
         }, Cesium.ScreenSpaceEventType.LEFT_DOWN);
 
         mouseHandler.setInputAction(function(movement) {
             var position = movement.endPosition;
             if(position != null) {
-                if(extent == null) {
-                    tooltip.showAt(position, "<p>Click to start drawing rectangle</p>");
-                } else {
+                if(extent !== null) {
+                    // tooltip.showAt(position, "<p>Click to start drawing rectangle</p>");
+                // } else {
                     var cartesian = scene.camera.pickEllipsoid(position, ellipsoid);
                     if (cartesian) {
                         var value = getExtent(firstPoint, ellipsoid.cartesianToCartographic(cartesian));
                         updateExtent(value);
-                        tooltip.showAt(position, "<p>Drag to change rectangle extent</p><p>Click again to finish drawing</p>");
+                        // tooltip.showAt(position, "<p>Drag to change rectangle extent</p><p>Click again to finish drawing</p>");
+                    // }
                     }
                 }
             }
+            scene.requestRender();
         }, Cesium.ScreenSpaceEventType.MOUSE_MOVE);
 
     }
@@ -747,11 +761,11 @@ var DrawHelper = (function() {
                                 updateHalfMarkers(index, _self.positions);
                                 onEdited();
                             },
-                            tooltip: function() {
-                                if(_self.positions.length > 3) {
-                                    return "Double click to remove this point";
-                                }
-                            }
+                            // tooltip: function() {
+                            //     if(_self.positions.length > 3) {
+                            //         return "Double click to remove this point";
+                            //     }
+                            // }
                         };
                         // add billboards and keep an ordered list of them for the polygon edges
                         markers.addBillboards(_self.positions, handleMarkerChanges);
@@ -791,9 +805,9 @@ var DrawHelper = (function() {
                                     onEdited();
                                 }
                             },
-                            tooltip: function() {
-                                return "Drag to create a new point";
-                            }
+                            // tooltip: function() {
+                            //     return "Drag to create a new point";
+                            // }
                         };
                         editMarkers.addBillboards(halfPositions, handleEditMarkerChanges);
                         this._editMarkers = editMarkers;
@@ -864,9 +878,9 @@ var DrawHelper = (function() {
                                     onEdited();
                                 }
                             },
-                            tooltip: function() {
-                                return "Drag to change the corners of this extent";
-                            }
+                            // tooltip: function() {
+                            //     return "Drag to change the corners of this extent";
+                            // }
                         };
                         markers.addBillboards(getExtentCorners(extent.extent), handleMarkerChanges);
                         this._markers = markers;
@@ -905,6 +919,18 @@ var DrawHelper = (function() {
 
         }
 
+    }
+
+    _.prototype.removePrimitives = function(callback) {
+        for (let p of drawedPrimitives) {
+            this._scene.primitives.remove(p);
+        }
+
+        if (typeof callback === "function") {
+            callback();
+        }
+
+        this._scene.requestRender();
     }
 
     _.DrawHelperWidget = (function() {
@@ -961,7 +987,11 @@ var DrawHelper = (function() {
             div.className = 'divider';
             toolbar.appendChild(div);
             addIcon('clear', options.clearIcon, 'Remove all primitives', function() {
-                scene.primitives.removeAll();
+                // scene.primitives.removeAll();
+                drawHelper.removePrimitives(
+                    function(extent) {
+                        _self.executeListeners({name: 'removeDrawed'});
+                })
             });
 
             enhanceWithListeners(this);

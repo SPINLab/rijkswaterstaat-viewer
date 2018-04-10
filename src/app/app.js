@@ -277,7 +277,9 @@ const viewer = new Cesium.Viewer('cesiumContainer', {
     terrainProvider: providers.terrain.cesiumWorld,
     terrainProviderViewModels: providers.terrain.viewModels,
     imageryProvider: false,
-    imageryProviderViewModels: providers.imagery.viewModels
+    imageryProviderViewModels: providers.imagery.viewModels,
+    requestRenderMode : true,
+    maximumRenderTimeChange : Infinity
 });
 
 const homeView = {
@@ -601,14 +603,17 @@ viewer.selectedEntityChanged.addEventListener(function(entity) {
             if (entity !== lastPick) {
                 if (typeof lastPick !== 'undefined') {
                     lastPick.polygon.material = defaultColor;
+                    viewer.scene.requestRender();
                 }
                 lastPick = entity;
 
                 if (entity.parent.name === "bim") {
                     entity.polygon.show = false;
                     providers.tilesets.mesh.meshTileset.show = true;
+                    viewer.scene.requestRender();
                 } else {
                     entity.polygon.material = highlightColor;
+                    viewer.scene.requestRender();
                 }
                 entity.description = loadingDescription;
                 updateDescription(entity);
@@ -618,9 +623,11 @@ viewer.selectedEntityChanged.addEventListener(function(entity) {
         } else {
             if (typeof lastPick !== 'undefined') {
                 lastPick.polygon.material = defaultColor;
+                viewer.scene.requestRender();
                 if (lastPick.parent.name === 'bim') {
                     lastPick.polygon.show = true;
                     providers.tilesets.mesh.meshTileset.show = false;
+                    viewer.scene.requestRender();
                 }
                 lastPick = undefined;
             }
@@ -628,9 +635,11 @@ viewer.selectedEntityChanged.addEventListener(function(entity) {
     } else {
         if (typeof lastPick !== 'undefined') {
             lastPick.polygon.material = defaultColor;
+            viewer.scene.requestRender();
             if (lastPick.parent.name === 'bim') {
                 lastPick.polygon.show = true;
                 providers.tilesets.mesh.meshTileset.show = false;
+                viewer.scene.requestRender();
             }
             lastPick = undefined;
         }
@@ -781,4 +790,8 @@ extentPrimitive.setEditable();
 toolbar.addListener('extentCreated', function(event) {
     const extent = event.extent;
     extentPrimitive.setExtent(extent);
+});
+
+toolbar.addListener('removeDrawed', function() {
+    extentPrimitive.setExtent(new Cesium.Rectangle(0, 0, 0, 0));
 });
