@@ -12,6 +12,7 @@ const providers = {
             url : 'https://assets.agi.com/stk-terrain/v1/tilesets/world/tiles',
             requestWaterMask: false
         }),
+        ellipsoid: new Cesium.EllipsoidTerrainProvider(),
         viewModels: [
             new Cesium.ProviderViewModel({
                 name : 'Cesium World Terrain',
@@ -25,6 +26,13 @@ const providers = {
                 iconUrl : Cesium.buildModuleUrl('Widgets/Images/TerrainProviders/CesiumWorldTerrain.png'),
                 creationFunction : function() {
                     return providers.terrain.stk;
+                }
+            }),
+            new Cesium.ProviderViewModel({
+                name : 'World Ellipsoid',
+                iconUrl : Cesium.buildModuleUrl('Widgets/Images/TerrainProviders/Ellipsoid.png'),
+                creationFunction : function() {
+                    return providers.terrain.ellipsoid;
                 }
             })
         ]
@@ -337,49 +345,53 @@ providers.tilesets.mesh.addTilesets();
 providers.tilesets.mesh.offsetTilesets(50);
 providers.entities.addAll();
 
-const auth = {'username': '', 'password': ''};
-function promptAuth() {
-    return new Promise(function(resolve, reject) {
-        if (auth.username !== '' || auth.password !== '') {
-            resolve();
-        } else {
-            const authPrompt = document.createElement("div");
-            authPrompt.className = "auth-prompt";
-
-            const submit = function () {
-                document.body.removeChild(authPrompt);
-                auth.username = usernameInput.value;
-                auth.password = passwordInput.value;
+const auth = {
+    'username': '',
+    'password': '',
+    prompt: function() {
+        return new Promise(function(resolve, reject) {
+            if (this.username !== '' || this.password !== '') {
                 resolve();
-            }
+            } else {
+                const authPrompt = document.createElement("div");
+                authPrompt.className = "auth-prompt";
 
-            const label = document.createElement("label");
-            label.textContent = "Please enter username and password:";
-            label.for = "auth-prompt-username";
-            authPrompt.appendChild(label);
+                const submit = function () {
+                    document.body.removeChild(authPrompt);
+                    this.username = usernameInput.value;
+                    this.password = passwordInput.value;
+                    resolve();
+                }.bind(this)
 
-            const usernameInput = document.createElement("input");
-            usernameInput.id = "auth-prompt-username";
-            usernameInput.type = "text";
-            authPrompt.appendChild(usernameInput);
+                const label = document.createElement("label");
+                label.textContent = "Please enter username and password:";
+                label.for = "auth-prompt-username";
+                authPrompt.appendChild(label);
 
-            const passwordInput = document.createElement("input");
-            passwordInput.id = "auth-prompt-password";
-            passwordInput.type = "password";
-            passwordInput.addEventListener("keyup", function(e) {
-                if (e.keyCode == 13) submit();
-            }, false);
-            authPrompt.appendChild(passwordInput);
+                const usernameInput = document.createElement("input");
+                usernameInput.id = "auth-prompt-username";
+                usernameInput.type = "text";
+                authPrompt.appendChild(usernameInput);
 
-            var button = document.createElement("button");
-            button.textContent = "Submit";
-            button.addEventListener("click", submit, false);
-            authPrompt.appendChild(button);
+                const passwordInput = document.createElement("input");
+                passwordInput.id = "auth-prompt-password";
+                passwordInput.type = "password";
+                passwordInput.addEventListener("keyup", function(e) {
+                    if (e.keyCode == 13) submit();
+                }, false);
+                authPrompt.appendChild(passwordInput);
 
-            document.body.appendChild(authPrompt);
-        };
-    })
+                var button = document.createElement("button");
+                button.textContent = "Submit";
+                button.addEventListener("click", submit, false);
+                authPrompt.appendChild(button);
+
+                document.body.appendChild(authPrompt);
+            };
+        }.bind(this))
+    }
 };
+
 
 function SparQLQuery(serverUrl, query) {
     return new Promise(function(resolve, reject) {
@@ -446,41 +458,39 @@ function pointToWKT(vertex) {
 }
 
 const ellipsoid = viewer.scene.globe.ellipsoid;
-const baseQueryPolygon = `
-PREFIX geo: <http://www.opengis.net/ont/geosparql#>
-PREFIX geof: <http://www.opengis.net/def/function/geosparql/>
 
-select ?subject ?property ?value
-%s
-where {
-    ?subject geo:hasGeometry ?geometry;
-          ?property ?value.
-    ?geometry geo:asWKT ?geometryWKT .
+const baseQueries = {
+    polygon: `PREFIX geo: <http://www.opengis.net/ont/geosparql#>
+    PREFIX geof: <http://www.opengis.net/def/function/geosparql/>
 
-    FILTER (
-        geof:sfWithin(?geometryWKT, '''
-        %s
-		'''^^geo:wktLiteral))
+    select ?subject ?property ?value
+    %s
+    where {
+        ?subject geo:hasGeometry ?geometry;
+              ?property ?value.
+        ?geometry geo:asWKT ?geometryWKT .
+
+        FILTER (
+            geof:sfWithin(?geometryWKT, '''
+            %s
+            '''^^geo:wktLiteral))
+    }`,
+    point: `PREFIX geo: <http://www.opengis.net/ont/geosparql#>
+    PREFIX geof: <http://www.opengis.net/def/function/geosparql/>
+
+    select ?subject ?property ?value
+    %s
+    where {
+        ?subject geo:hasGeometry ?geometry;
+              ?property ?value.
+        ?geometry geo:asWKT ?geometryWKT .
+
+        FILTER (
+            geof:sfWithin(?geometryWKT, geof:buffer('''
+            %s
+            '''^^geo:wktLiteral, 20)))
+    }`
 }
-`
-
-const baseQueryPoint = `
-PREFIX geo: <http://www.opengis.net/ont/geosparql#>
-PREFIX geof: <http://www.opengis.net/def/function/geosparql/>
-
-select ?subject ?property ?value
-%s
-where {
-    ?subject geo:hasGeometry ?geometry;
-          ?property ?value.
-    ?geometry geo:asWKT ?geometryWKT .
-
-    FILTER (
-        geof:sfWithin(?geometryWKT, geof:buffer('''
-        %s
-		'''^^geo:wktLiteral, 20)))
-}
-`
 
 function buildQuery(entity) {
     let wkt;
@@ -512,9 +522,9 @@ function buildQuery(entity) {
     }
 
     if (typeof entity.polygon !== 'undefined') {
-        query = vsprintf(baseQueryPolygon, [graphs, wkt]);
+        query = vsprintf(baseQueries.polygon, [graphs, wkt]);
     } else if (typeof entity.billboard !== 'undefined') {
-        query = vsprintf(baseQueryPoint, [graphs, wkt]);
+        query = vsprintf(baseQueries.point, [graphs, wkt]);
     }
     return query;
 };
@@ -587,7 +597,7 @@ const SparQLServer = 'http://148.251.106.132:8092/repositories/rwsld';
 function updateDescription(entity) {
     const query = buildQuery(entity);
     if (query !== '') {
-        promptAuth().then(function () {
+        auth.prompt().then(function () {
             SparQLQuery(SparQLServer, query).then(function(entityData) {
                 entity.description = buildDescription(entityData);
             });
@@ -648,14 +658,17 @@ viewer.selectedEntityChanged.addEventListener(function(entity) {
 
 kunstwerkenToggle.addEventListener('change', function() {
     providers.entities.kunstwerken.show = this.checked;
+    viewer.scene.requestRender();
 });
 
 beheerobjectenToggle.addEventListener('change', function() {
     providers.entities.beheerobjecten.show = this.checked;
+    viewer.scene.requestRender();
 });
 
 bimToggle.addEventListener('change', function() {
     providers.entities.bim.show = this.checked;
+    viewer.scene.requestRender();
 });
 
 ahn3Toggle.addEventListener('change', function() {
@@ -666,6 +679,7 @@ ahn3Toggle.addEventListener('change', function() {
     } else {
         providers.tilesets.pointcloud.ahn3Tileset.show = false;
     }
+    viewer.scene.requestRender();
 });
 
 ahn2Toggle.addEventListener('change', function() {
@@ -676,6 +690,7 @@ ahn2Toggle.addEventListener('change', function() {
     } else {
         providers.tilesets.pointcloud.ahn2Tileset.show = false;
     }
+    viewer.scene.requestRender();
 });
 
 diskToggle.addEventListener('change', function() {
@@ -779,7 +794,7 @@ let extentPrimitive = new DrawHelper.ExtentPrimitive({
         fabric : {
           type : 'Color',
           uniforms : {
-            color : new Cesium.Color(1.0, 0.0, 0.0, 0.5)
+            color : new Cesium.Color(0.27, 0.53, 0.73, 0.5)
           }
         }
     })
@@ -787,9 +802,30 @@ let extentPrimitive = new DrawHelper.ExtentPrimitive({
 viewer.scene.primitives.add(extentPrimitive);
 extentPrimitive.setEditable();
 
+const submitBtn = document.getElementById("submitExtent");
+
 toolbar.addListener('extentCreated', function(event) {
     const extent = event.extent;
     extentPrimitive.setExtent(extent);
+    submitBtn.disabled = false;
+    submitBtn.style.visibility = 'visible';
+});
+
+extentPrimitive.addListener('onEdited', function() {
+    submitBtn.disabled = false;
+    submitBtn.style.visibility = 'visible';
+});
+
+submitBtn.addEventListener('click', function() {
+    const bbox = {
+        xmin: extentPrimitive.extent.west * Cesium.Math.DEGREES_PER_RADIAN,
+        ymin: extentPrimitive.extent.south * Cesium.Math.DEGREES_PER_RADIAN,
+        xmax: extentPrimitive.extent.east * Cesium.Math.DEGREES_PER_RADIAN,
+        ymax: extentPrimitive.extent.north * Cesium.Math.DEGREES_PER_RADIAN
+    };
+    console.log(bbox);
+    submitBtn.disabled = true;
+    submitBtn.style.visibility = 'hidden';
 });
 
 toolbar.addListener('removeDrawed', function() {

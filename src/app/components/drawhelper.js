@@ -253,10 +253,14 @@ const DrawHelper = (function() {
 
                 this._primitive = this._primitive && this._primitive.destroy();
 
+                // this._primitive = new Cesium.GroundPrimitive({
                 this._primitive = new Cesium.Primitive({
                     geometryInstances : new Cesium.GeometryInstance({
                         geometry : geometry,
                         id : this.id,
+                        // attributes : {
+                        //     color : new Cesium.ColorGeometryInstanceAttribute(1.0, 0.0, 0.0, 0.5)
+                        // }
                         pickPrimitive : this
                     }),
                     appearance : this.appearance,

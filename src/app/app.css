@@ -157,10 +157,18 @@ button {
 
 #toolbar {
     position: absolute;
-    top: 20%;
+    top: 50%;
     left: 0;
     display: inline;
     margin: 10px;
     padding: 0px;
     background: white;
+}
+
+#submitExtent{
+    visibility: hidden;
+    position: absolute;
+    left: 50%;
+    bottom: 5%;
+    transform: translate(-50%);
 }
