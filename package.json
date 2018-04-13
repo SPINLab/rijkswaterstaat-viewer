@@ -6,9 +6,10 @@
   "dependencies": {
     "base-64": "^0.1.0",
     "cesium": "^1.44.0",
-    "rdnaptrans": "^0.3.0",
+    "proj4": "^2.4.4",
     "simplebar": "^2.6.1",
-    "sprintf-js": "^1.1.1"
+    "sprintf-js": "^1.1.1",
+    "wicket": "^1.3.2"
   },
   "devDependencies": {},
   "scripts": {},

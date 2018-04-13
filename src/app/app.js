@@ -5,6 +5,16 @@ document.body.appendChild(style);
 
 Cesium.BingMapsApi.defaultKey = '';
 
+proj4.defs([
+    [
+      'EPSG:4326',
+      '+title=WGS 84 (long/lat) +proj=longlat +ellps=WGS84 +datum=WGS84 +units=degrees'],
+    [
+      'EPSG:28992',
+      '+proj=sterea +lat_0=52.15616055555555 +lon_0=5.38763888888889 +k=0.999908 +x_0=155000 +y_0=463000 +ellps=bessel +units=m +towgs84=565.2369,50.0087,465.658,-0.406857330322398,0.350732676542563,-1.8703473836068,4.0812 +no_defs'
+    ]
+]);
+
 const providers = {
     terrain: {
         cesiumWorld: Cesium.createWorldTerrain(),
@@ -424,7 +434,10 @@ function capitalizeFirstLetter(string) {
 function toRD(coord) {
     let x;
     let y;
-    if (coord.hasOwnProperty('longitude')) {
+    if (coord instanceof Array) {
+        x = coord[0] * Cesium.Math.DEGREES_PER_RADIAN;
+        y = coord[1] * Cesium.Math.DEGREES_PER_RADIAN;
+    } else if (coord.hasOwnProperty('longitude')) {
         x = coord.longitude * Cesium.Math.DEGREES_PER_RADIAN;
         y = coord.latitude * Cesium.Math.DEGREES_PER_RADIAN;
     } else if (coord.hasOwnProperty('x')) {
@@ -436,15 +449,15 @@ function toRD(coord) {
     } else {
         return;
     }
-    const rd = rdnaptrans.Transform.etrs2rd(new rdnaptrans.Geographic(y, x));
+    const rd = proj4('EPSG:4326', 'EPSG:28992', [x, y])
     return rd;
 }
 
 function polygonToWKT(vertices) {
     let wkt = "POLYGON ((";
-    for (const v of vertices) {
+    for (let v of vertices) {
         const rd = toRD(v);
-        wkt += rd.X + ' ' + rd.Y + ', ';
+        wkt += rd[0] + ' ' + rd[1] + ', ';
     }
     wkt = wkt.slice(0, wkt.length-2)
     wkt += "))";
@@ -453,7 +466,7 @@ function polygonToWKT(vertices) {
 
 function pointToWKT(vertex) {
     const rd = toRD(vertex)
-    const wkt = "POINT (" + rd.X + ' ' + rd.Y + ')';
+    const wkt = "POINT (" + rd[0] + ' ' + rd[1] + ')';
     return wkt
 }
 
@@ -489,10 +502,19 @@ const baseQueries = {
             geof:sfWithin(?geometryWKT, geof:buffer('''
             %s
             '''^^geo:wktLiteral, 20)))
+    }`,
+    getGeometry: `PREFIX geo: <http://www.opengis.net/ont/geosparql#>
+
+    select ?geom
+    where {
+        ?s ?p ?geom .
+
+        filter (?s= <%s>)
+        . filter (datatype(?geom) = geo:wktLiteral)
     }`
 }
 
-function buildQuery(entity) {
+function entityToWKT(entity) {
     let wkt;
     if (typeof entity.polygon !== 'undefined') {
         const coords = ellipsoid.cartesianArrayToCartographicArray(entity.polygon.hierarchy.getValue().positions)
@@ -503,7 +525,10 @@ function buildQuery(entity) {
     } else {
         return;
     }
+    return wkt;
+}
 
+function buildQuery(wkt) {
     let graphs = '';
     if (diskToggle.checked === true) {
         graphs += 'from <http://www.rijkswaterstaat.nl/linked_data/disk/> ';
@@ -521,9 +546,10 @@ function buildQuery(entity) {
         return query;
     }
 
-    if (typeof entity.polygon !== 'undefined') {
+    const shape = wkt.split(" ")[0];
+    if (shape === "POLYGON") {
         query = vsprintf(baseQueries.polygon, [graphs, wkt]);
-    } else if (typeof entity.billboard !== 'undefined') {
+    } else if (shape === "POINT") {
         query = vsprintf(baseQueries.point, [graphs, wkt]);
     }
     return query;
@@ -594,8 +620,10 @@ function buildDescription(entityData) {
 }
 
 const SparQLServer = 'http://148.251.106.132:8092/repositories/rwsld';
+
 function updateDescription(entity) {
-    const query = buildQuery(entity);
+    const wkt = entityToWKT(entity);
+    const query = buildQuery(wkt);
     if (query !== '') {
         auth.prompt().then(function () {
             SparQLQuery(SparQLServer, query).then(function(entityData) {
@@ -717,10 +745,13 @@ ultimoToggle.addEventListener('change', function() {
 function zoomToRD(x, y) {
     x = parseFloat(x);
     y = parseFloat(y);
-    const wgs = rdnaptrans.Transform.rd2etrs(new rdnaptrans.Cartesian(x, y))
+    // const wgs = rdnaptrans.Transform.rd2etrs(new rdnaptrans.Cartesian(x, y))
+    const wgs = proj4('EPSG:28992', 'EPSG:4326', [x, y])
     const destination = Cesium.Cartesian3.fromDegrees(
-        wgs.lambda,
-        wgs.phi,
+        // wgs.lambda,
+        // wgs.phi,
+        wgs[0],
+        wgs[1],
         300
     );
     viewer.camera.setView({ destination: destination });
@@ -817,13 +848,24 @@ extentPrimitive.addListener('onEdited', function() {
 });
 
 submitBtn.addEventListener('click', function() {
-    const bbox = {
-        xmin: extentPrimitive.extent.west * Cesium.Math.DEGREES_PER_RADIAN,
-        ymin: extentPrimitive.extent.south * Cesium.Math.DEGREES_PER_RADIAN,
-        xmax: extentPrimitive.extent.east * Cesium.Math.DEGREES_PER_RADIAN,
-        ymax: extentPrimitive.extent.north * Cesium.Math.DEGREES_PER_RADIAN
+    const upperleft = [extentPrimitive.extent.west, extentPrimitive.extent.north];
+    const lowerright = [extentPrimitive.extent.east, extentPrimitive.extent.south];
+    const upperright = [extentPrimitive.extent.east, extentPrimitive.extent.north];
+    const lowerleft = [extentPrimitive.extent.west, extentPrimitive.extent.south];
+
+    const bbox = [upperleft, upperright, lowerright, lowerleft, upperleft];
+    const wkt = polygonToWKT(bbox);
+
+    const query = buildQuery(wkt);
+
+    if (query !== '') {
+        auth.prompt().then(function () {
+            SparQLQuery(SparQLServer, query).then(function(data) {
+                const geometries = filterGeometries(data.results.bindings);
+            });
+        });
     };
-    console.log(bbox);
+
     submitBtn.disabled = true;
     submitBtn.style.visibility = 'hidden';
 });
@@ -831,3 +873,58 @@ submitBtn.addEventListener('click', function() {
 toolbar.addListener('removeDrawed', function() {
     extentPrimitive.setExtent(new Cesium.Rectangle(0, 0, 0, 0));
 });
+
+function filterGeometries(data) {
+    for (let i in data) {
+        if (data[i].property.value === "http://www.opengis.net/ont/geosparql#hasGeometry") {
+            const query = vsprintf(baseQueries.getGeometry, data[i].value.value);
+            auth.prompt().then(function () {
+                SparQLQuery(SparQLServer, query).then(function(data) {
+                    drawGeometry(data.results.bindings[0].geom.value);
+                });
+            });
+        }
+    }
+}
+
+// function reprojectGeojson(geojson, from, to) {
+//     for (let coords of geojson.coordinates) {
+
+//     }
+// }
+
+const drawnGeometries = new Cesium.Entity({
+    name: "drawn",
+    show: true
+});
+function drawGeometry(geom) {
+    console.log(geom);
+    const wkt = new Wkt.Wkt();
+    wkt.read(geom);
+    const geojson = wkt.toJson();
+    console.log(geojson);
+
+    // const source = new Cesium.GeoJsonDataSource();
+
+    // source.load(geojson, {
+    //     fill: defaultColor,
+    //     clampToGround: true
+    // }).then(function() {
+    //     for (let entity of source.entities.values) {
+    //         if (typeof entity.billboard !== "undefined") {
+    //             viewer.entities.add({
+    //                 parent: drawnGeometries,
+    //                 position: entity.position,
+    //                 billboard: entity.billboard,
+    //                 description: loadingDescription
+    //             })
+    //         } else if (typeof entity.polygon !== "undefined") {
+    //             viewer.entities.add({
+    //                 parent: drawnGeometries,
+    //                 polygon: entity.polygon,
+    //                 description: loadingDescription
+    //             });
+    //         }
+    //     }
+    // })
+}
