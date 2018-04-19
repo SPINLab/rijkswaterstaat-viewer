@@ -546,6 +546,7 @@ function buildQuery(wkt) {
         return query;
     }
 
+    console.log(wkt);
     const shape = wkt.split(" ")[0];
     if (shape === "POLYGON") {
         query = vsprintf(baseQueries.polygon, [graphs, wkt]);
@@ -722,21 +723,25 @@ ahn2Toggle.addEventListener('change', function() {
 });
 
 diskToggle.addEventListener('change', function() {
-    if (typeof viewer.selectedEntity !== 'undefined') {
+    if (viewer.selectedEntity.id !== 'None') {
         viewer.selectedEntity.description = loadingDescription;
         updateDescription(viewer.selectedEntity);
     }
+    // if (extentPrimitive.extent.north === 0 && extentPrimitive.extent.east === 0 &&
+    //         extentPrimitive.extent.south === 0 && extentPrimitive.extent.west === 0) {
+
+    // }
 });
 
 kerngisToggle.addEventListener('change', function() {
-    if (typeof viewer.selectedEntity !== 'undefined') {
+    if (viewer.selectedEntity.id !== 'None') {
         viewer.selectedEntity.description = loadingDescription;
         updateDescription(viewer.selectedEntity);
     }
 });
 
 ultimoToggle.addEventListener('change', function() {
-    if (typeof viewer.selectedEntity !== 'undefined') {
+    if (viewer.selectedEntity.id !== 'None') {
         viewer.selectedEntity.description = loadingDescription;
         updateDescription(viewer.selectedEntity);
     }
@@ -887,44 +892,80 @@ function filterGeometries(data) {
     }
 }
 
-// function reprojectGeojson(geojson, from, to) {
-//     for (let coords of geojson.coordinates) {
-
-//     }
-// }
+function reprojectGeojson(geojson, from, to) {
+    if (geojson.type === 'Point') {
+        geojson.coordinates = proj4(from, to, geojson.coordinates);
+    } else if (geojson.type === 'LineString' || geojson.type === 'MultiPoint') {
+        for (let i = 0; i < geojson.coordinates.length; i++) {
+            geojson.coordinates[i] = proj4(from, to, geojson.coordinates[i]);
+        }
+    } else if (geojson.type === 'Polygon' || geojson.type === 'MultiLineString') {
+        for (let i = 0; i < geojson.coordinates.length; i++) {
+            for (let j = 0; j < geojson.coordinates[i].length; j++) {
+                geojson.coordinates[i][j] = proj4(from, to, geojson.coordinates[i][j]);
+            }
+        }
+    } else if (geojson.type === 'MultiPolygon') {
+        for (let i = 0; i < geojson.coordinates.length; i++) {
+            for (let j = 0; j < geojson.coordinates[i].length; j++) {
+                for (let k = 0; k < geojson.coordinates[i][j].length; k++) {
+                    geojson.coordinates[i][j][k] = proj4(from, to, geojson.coordinates[i][j][k]);
+                }
+            }
+        }
+    } else {
+        console.error("Shape type not recognized.")
+        return;
+    }
+    return geojson;
+}
 
 const drawnGeometries = new Cesium.Entity({
     name: "drawn",
     show: true
 });
+
+function removeZ(wkt) {
+    const wktSplit = wkt.split(',');
+    if (wktSplit.length > 1) {
+        if (wktSplit[1].split(' ').length > 2) {
+            wkt = wkt.replace(/ \S+,/g, ',').replace(/ [^\s\)]+[)]/g, ')')
+        };
+    } else if (wktSplit[0].split(' ').length > 3) {
+        wkt = wkt.replace(/ [^\s\)]+[)]/g, ')')
+    }
+    return wkt;
+}
+
 function drawGeometry(geom) {
-    console.log(geom);
+    geom = removeZ(geom);
     const wkt = new Wkt.Wkt();
     wkt.read(geom);
-    const geojson = wkt.toJson();
-    console.log(geojson);
+    let geojson = wkt.toJson();
 
-    // const source = new Cesium.GeoJsonDataSource();
+    geojson = reprojectGeojson(geojson, 'EPSG:28992', 'EPSG:4326')
 
-    // source.load(geojson, {
-    //     fill: defaultColor,
-    //     clampToGround: true
-    // }).then(function() {
-    //     for (let entity of source.entities.values) {
-    //         if (typeof entity.billboard !== "undefined") {
-    //             viewer.entities.add({
-    //                 parent: drawnGeometries,
-    //                 position: entity.position,
-    //                 billboard: entity.billboard,
-    //                 description: loadingDescription
-    //             })
-    //         } else if (typeof entity.polygon !== "undefined") {
-    //             viewer.entities.add({
-    //                 parent: drawnGeometries,
-    //                 polygon: entity.polygon,
-    //                 description: loadingDescription
-    //             });
-    //         }
-    //     }
-    // })
+    const source = new Cesium.GeoJsonDataSource();
+
+    source.load(geojson, {
+        fill: defaultColor,
+        clampToGround: true
+    }).then(function() {
+        for (let entity of source.entities.values) {
+            if (typeof entity.billboard !== "undefined") {
+                viewer.entities.add({
+                    parent: drawnGeometries,
+                    position: entity.position,
+                    billboard: entity.billboard,
+                    description: loadingDescription
+                })
+            } else if (typeof entity.polygon !== "undefined") {
+                viewer.entities.add({
+                    parent: drawnGeometries,
+                    polygon: entity.polygon,
+                    description: loadingDescription
+                });
+            }
+        }
+    })
 }
