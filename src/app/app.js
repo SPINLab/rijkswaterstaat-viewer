@@ -917,7 +917,7 @@ function reprojectGeojson(geojson, from, to) {
         console.error("Shape type not recognized.")
         return;
     }
-    return geojson;
+        return geojson;
 }
 
 const drawnGeometries = new Cesium.Entity({
@@ -929,7 +929,7 @@ function removeZ(wkt) {
     const wktSplit = wkt.split(',');
     if (wktSplit.length > 1) {
         if (wktSplit[1].split(' ').length > 2) {
-            wkt = wkt.replace(/ \S+,/g, ',').replace(/ [^\s\)]+[)]/g, ')')
+            wkt = wkt.replace(/ [^\s\)]+,/g, ',').replace(/ [^\s\)]+[)]/g, ')')
         };
     } else if (wktSplit[0].split(' ').length > 3) {
         wkt = wkt.replace(/ [^\s\)]+[)]/g, ')')
@@ -967,5 +967,6 @@ function drawGeometry(geom) {
                 });
             }
         }
+        viewer.scene.requestRender();
     })
 }
