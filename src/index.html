@@ -1,84 +1,95 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <title>RWS Viewer</title>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <script src="../node_modules/base-64/base64.js"></script>
-        <script src="../node_modules/sprintf-js/dist/sprintf.min.js"></script>
-        <script src="../node_modules/proj4/dist/proj4.js"></script>
-        <script src="../node_modules/cesium/Build/Cesium/Cesium.js"></script>
-        <script src="../node_modules/wicket/wicket.js"></script>
-        <script src="./app/components/DrawHelper.js"></script>
-        <!-- <link rel="stylesheet" type="text/css" href="../node_modules/cesium/Build/Cesium/Widgets/BaseLayerPicker/BaseLayerPicker.css"> -->
-        <link rel="stylesheet" type="text/css" href="app/app.css">
-    </head>
-    <body>
-        <div id="cesiumContainer"></div>
 
-        <div id="toolbar"></div>
+<head>
+    <title>RWS Viewer</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="../node_modules/base-64/base64.js"></script>
+    <script src="../node_modules/sprintf-js/dist/sprintf.min.js"></script>
+    <script src="../node_modules/proj4/dist/proj4.js"></script>
+    <script src="../node_modules/cesium/Build/Cesium/Cesium.js"></script>
+    <script src="../node_modules/wicket/wicket.js"></script>
+    <script src="./app/components/DrawHelper.js"></script>
+    <!-- <link rel="stylesheet" type="text/css" href="../node_modules/cesium/Build/Cesium/Widgets/BaseLayerPicker/BaseLayerPicker.css"> -->
+    <link rel="stylesheet" type="text/css" href="app/app.css">
+</head>
 
-        <div id="viz-switches" class="switch-container">
-            Show:<br>
-            <label class="switch">
-                <input type="checkbox" id="beheerobjectenToggle">
-                <span class="slider round"></span>
-            </label>
-            Beheerobjecten <br>
-            <label class="switch">
-                <input type="checkbox" id="kunstwerkenToggle" checked>
-                <span class="slider round"></span>
-            </label>
-            Kunstwerken <br>
-            <label class="switch">
-                <input type="checkbox" id="bimToggle">
-                <span class="slider round"></span>
-            </label>
-            BIM footprints <br>
-            <label class="switch">
-                <input type="checkbox" id="ahn3Toggle" checked>
-                <span class="slider round"></span>
-            </label>
-            AHN3 <br>
-            <label class="switch">
-                <input type="checkbox" id="ahn2Toggle">
-                <span class="slider round"></span>
-            </label>
-            AHN2
-        </div>
+<body>
+    <div id="cesiumContainer"></div>
 
-        <div id="query-switches" class="switch-container">
-            Query:<br>
-            <label class="switch">
-                <input type="checkbox" id="diskToggle" checked>
-                <span class="slider round"></span>
-            </label>
-            DISK <br>
-            <label class="switch">
-                <input type="checkbox" id="ultimoToggle">
-                <span class="slider round"></span>
-            </label>
-            ULTIMO <br>
-            <label class="switch">
-                <input type="checkbox" id="kerngisToggle">
-                <span class="slider round"></span>
-            </label>
-            KernGIS
-        </div>
+    <div id="toolbar"></div>
 
-        <div id="queryPickerContainer" class="switch-container">
-                <select id=querySelect>
-                    <option value="overbrugging">Overbrugging</option>
-                    <option value="onderdoorgang">Onderdoorgang</option>
-                    <option value="ponton">Ponton</option>
-                </select>
-            <button id="queryButton">Query</button>
-            <div id="queryResults" class="switch-container"></div>
-        </div>
+    <div id="viz-switches" class="switch-container">
+        Show:
+        <br>
+        <label class="switch">
+            <input type="checkbox" id="beheerobjectenToggle">
+            <span class="slider round"></span>
+        </label>
+        Beheerobjecten
+        <br>
+        <label class="switch">
+            <input type="checkbox" id="kunstwerkenToggle" checked>
+            <span class="slider round"></span>
+        </label>
+        Kunstwerken
+        <br>
+        <label class="switch">
+            <input type="checkbox" id="bimToggle">
+            <span class="slider round"></span>
+        </label>
+        BIM footprints
+        <br>
+        <label class="switch">
+            <input type="checkbox" id="ahn3Toggle" checked>
+            <span class="slider round"></span>
+        </label>
+        AHN3
+        <br>
+        <label class="switch">
+            <input type="checkbox" id="ahn2Toggle">
+            <span class="slider round"></span>
+        </label>
+        AHN2
+    </div>
 
-        <button class="button" id="submitExtent" disabled="true" >Bevestig Gebied</button>
+    <div id="query-switches" class="switch-container">
+        Query:
+        <br>
+        <label class="switch">
+            <input type="checkbox" id="diskToggle" checked>
+            <span class="slider round"></span>
+        </label>
+        DISK
+        <br>
+        <label class="switch">
+            <input type="checkbox" id="ultimoToggle">
+            <span class="slider round"></span>
+        </label>
+        ULTIMO
+        <br>
+        <label class="switch">
+            <input type="checkbox" id="kerngisToggle">
+            <span class="slider round"></span>
+        </label>
+        KernGIS
+    </div>
+
+    <div id="queryPickerContainer" class="switch-container">
+        <select id=querySelect>
+            <option value="overbrugging">Overbrugging</option>
+            <option value="onderdoorgang">Onderdoorgang</option>
+            <option value="ponton">Ponton</option>
+        </select>
+        <button id="queryButton">Query</button>
+        <div id="queryResults" class="switch-container"></div>
+    </div>
+
+    <button class="button" id="submitExtent" disabled="true">Bevestig Gebied</button>
 
     <script src="app/components/providers.js"></script>
-        <script src="app/app.js"></script>
-    </body>
+    <script src="app/app.js"></script>
+</body>
+
 </html>
