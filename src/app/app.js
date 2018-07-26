@@ -1,10 +1,7 @@
 'use strict';
-const style = document.createElement('style');
-style.innerHTML =
-    'body, html { width: 100%; height: 100%; margin: 0; padding: 0; overflow: hidden; } #top { display: none; }';
-document.body.appendChild(style);
 
-Cesium.BingMapsApi.defaultKey = '';
+Cesium.BingMapsApi.defaultKey =
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI1ZWNjNmNiOC0xZDhiLTQ1NTktOGNiZi1jZjE3YzIwMDNkMDMiLCJpZCI6NDk1LCJpYXQiOjE1MjUyNTUyNzV9.R-_alHqdFwfZODeZRMbU3b_Cqakop-X5w2mbtoAS3fA';
 
 proj4.defs([
     [
