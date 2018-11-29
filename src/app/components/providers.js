@@ -216,6 +216,7 @@ providers.tilesets.mesh = {
 providers.tilesets.pointcloud = {
     ahn3Tileset: new Cesium.Cesium3DTileset({
         url: '../data/pointcloud/ahn3/tileset.json',
+        show: false,
         pointCloudShading: {
             attenuation: true,
             maximumAttenuation: 2.0
@@ -276,7 +277,7 @@ providers.tilesets.pointcloud = {
 providers.entities = {
     kunstwerken: new Cesium.Entity({
         name: 'kunstwerken',
-        show: true
+        show: false
     }),
     beheerobjecten: new Cesium.Entity({
         name: 'beheerobjecten',
