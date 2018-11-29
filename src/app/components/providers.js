@@ -23,7 +23,7 @@ providers.terrain = {
     ]
 };
 
-providers.imagery = {
+providers.baseLayers = {
     ortho2016wms: new Cesium.WebMapServiceImageryProvider({
         url: 'https://geodata.nationaalgeoregister.nl/luchtfoto/rgb/wms?',
         layers: '2016_ortho25'

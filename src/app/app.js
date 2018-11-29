@@ -23,7 +23,7 @@ const viewer = new Cesium.Viewer('cesiumContainer', {
     terrainProvider: providers.terrain.cesiumWorld,
     terrainProviderViewModels: providers.terrain.viewModels,
     imageryProvider: false,
-    imageryProviderViewModels: providers.imagery.viewModels,
+    imageryProviderViewModels: providers.baseLayers.viewModels,
     requestRenderMode: true,
     maximumRenderTimeChange: Infinity
 });
