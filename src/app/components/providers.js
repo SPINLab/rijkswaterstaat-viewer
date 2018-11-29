@@ -24,75 +24,17 @@ providers.terrain = {
 };
 
 providers.baseLayers = {
-    ortho2016wms: new Cesium.WebMapServiceImageryProvider({
+    aerial2016wms: new Cesium.WebMapServiceImageryProvider({
         url: 'https://geodata.nationaalgeoregister.nl/luchtfoto/rgb/wms?',
-        layers: '2016_ortho25'
+        layers: '2016_ortho25',
+        credit: new Cesium.Credit('PDOK'),
+        enablePickFeatures: false
     }),
-    ortho2017wms: new Cesium.WebMapServiceImageryProvider({
+    aerial2017wms: new Cesium.WebMapServiceImageryProvider({
         url: 'https://geodata.nationaalgeoregister.nl/luchtfoto/rgb/wms?',
-        layers: '2017_ortho25'
-    }),
-    ortho2016wmts: new Cesium.WebMapTileServiceImageryProvider({
-        url: 'https://geodata.nationaalgeoregister.nl/luchtfoto/rgb/wmts?',
-        layer: '2016_ortho25',
-        style: 'default',
-        format: 'image/png',
-        tileMatrixSetID: 'EPSG:3857',
-        tileMatrixLabels: [
-            '00',
-            '01',
-            '02',
-            '03',
-            '04',
-            '05',
-            '06',
-            '07',
-            '08',
-            '09',
-            '10',
-            '11',
-            '12',
-            '13',
-            '14',
-            '15',
-            '16',
-            '17',
-            '18',
-            '19'
-        ],
-        maximumLevel: 19
-        // credit : new Cesium.Credit('PDOK')
-    }),
-    ortho2017wmts: new Cesium.WebMapTileServiceImageryProvider({
-        url: 'https://geodata.nationaalgeoregister.nl/luchtfoto/rgb/wmts?',
-        layer: '2017_ortho25',
-        style: 'default',
-        format: 'image/png',
-        tileMatrixSetID: 'EPSG:3857',
-        tileMatrixLabels: [
-            '00',
-            '01',
-            '02',
-            '03',
-            '04',
-            '05',
-            '06',
-            '07',
-            '08',
-            '09',
-            '10',
-            '11',
-            '12',
-            '13',
-            '14',
-            '15',
-            '16',
-            '17',
-            '18',
-            '19'
-        ],
-        maximumLevel: 19
-        // credit : new Cesium.Credit('PDOK')
+        layers: '2017_ortho25',
+        credit: new Cesium.Credit('PDOK'),
+        enablePickFeatures: false
     }),
     BRT: new Cesium.WebMapTileServiceImageryProvider({
         url: 'https://geodata.nationaalgeoregister.nl/tiles/service/wmts?',
@@ -122,8 +64,41 @@ providers.baseLayers = {
             'EPSG:3857:18',
             'EPSG:3857:19'
         ],
-        maximumLevel: 19
-        // credit : new Cesium.Credit('PDOK')
+        maximumLevel: 19,
+        credit: new Cesium.Credit('PDOK'),
+        enablePickFeatures: false
+    }),
+    BRTgrijs: new Cesium.WebMapTileServiceImageryProvider({
+        url: 'https://geodata.nationaalgeoregister.nl/tiles/service/wmts?',
+        layer: 'brtachtergrondkaartgrijs',
+        style: 'default',
+        format: 'image/png',
+        tileMatrixSetID: 'EPSG:3857',
+        tileMatrixLabels: [
+            'EPSG:3857:0',
+            'EPSG:3857:1',
+            'EPSG:3857:2',
+            'EPSG:3857:3',
+            'EPSG:3857:4',
+            'EPSG:3857:5',
+            'EPSG:3857:6',
+            'EPSG:3857:7',
+            'EPSG:3857:8',
+            'EPSG:3857:9',
+            'EPSG:3857:10',
+            'EPSG:3857:11',
+            'EPSG:3857:12',
+            'EPSG:3857:13',
+            'EPSG:3857:14',
+            'EPSG:3857:15',
+            'EPSG:3857:16',
+            'EPSG:3857:17',
+            'EPSG:3857:18',
+            'EPSG:3857:19'
+        ],
+        maximumLevel: 19,
+        credit: new Cesium.Credit('PDOK'),
+        enablePickFeatures: false
     }),
     viewModels: [
         new Cesium.ProviderViewModel({
@@ -131,7 +106,7 @@ providers.baseLayers = {
             iconUrl: Cesium.buildModuleUrl('Widgets/Images/ImageryProviders/bingAerial.png'),
             tooltip: 'PDOK Luchtfoto 2016 25cm',
             creationFunction: function() {
-                return providers.imagery.ortho2016wms;
+                return providers.baseLayers.aerial2016wms;
             }
         }),
         new Cesium.ProviderViewModel({
@@ -139,7 +114,7 @@ providers.baseLayers = {
             iconUrl: Cesium.buildModuleUrl('Widgets/Images/ImageryProviders/bingAerial.png'),
             tooltip: 'PDOK Luchtfoto 2017 25cm',
             creationFunction: function() {
-                return providers.imagery.ortho2017wms;
+                return providers.baseLayers.aerial2017wms;
             }
         }),
         new Cesium.ProviderViewModel({
@@ -147,7 +122,15 @@ providers.baseLayers = {
             iconUrl: Cesium.buildModuleUrl('Widgets/Images/ImageryProviders/openStreetMap.png'),
             tooltip: 'Basis Registratie Topografie',
             creationFunction: function() {
-                return providers.imagery.BRT;
+                return providers.baseLayers.BRT;
+            }
+        }),
+        new Cesium.ProviderViewModel({
+            name: 'BRT Grijs',
+            iconUrl: Cesium.buildModuleUrl('Widgets/Images/ImageryProviders/openStreetMap.png'),
+            tooltip: 'Basis Registratie Topografie',
+            creationFunction: function() {
+                return providers.baseLayers.BRTgrijs;
             }
         })
     ]
