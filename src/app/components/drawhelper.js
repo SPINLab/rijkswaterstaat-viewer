@@ -963,7 +963,7 @@ const DrawHelper = (function() {
 
             function addIcon(id, url, title, callback) {
                 var div = document.createElement('DIV');
-                div.className = 'button';
+                div.className = 'cesium-button';
                 div.title = title;
                 toolbar.appendChild(div);
                 div.onclick = callback;

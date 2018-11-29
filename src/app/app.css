@@ -1,7 +1,18 @@
 @import url(../../node_modules/cesium/Build/Cesium/Widgets/widgets.css);
 @import url(./components/drawhelper.css);
-html, body, #cesiumContainer {
-    width: 100%; height: 100%; margin: 0; padding: 0; overflow: hidden;
+html,
+body,
+#cesiumContainer {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+}
+
+.cesium-navigation-help-visible,
+.cesium-baseLayerPicker-dropDown-visible {
+    z-index: 2;
 }
 
 .switch-container {
@@ -28,7 +39,9 @@ html, body, #cesiumContainer {
 }
 
 /* Hide default HTML checkbox */
-.switch input {display:none;}
+.switch input {
+    display: none;
+}
 
 /* The slider */
 .slider {
@@ -39,20 +52,20 @@ html, body, #cesiumContainer {
     right: 0;
     bottom: -3px;
     background-color: #ccc;
-    -webkit-transition: .4s;
-    transition: .4s;
+    -webkit-transition: 0.4s;
+    transition: 0.4s;
 }
 
 .slider:before {
     position: absolute;
-    content: "";
+    content: '';
     height: 13px;
     width: 13px;
     left: 2px;
     bottom: 2px;
     background-color: white;
-    -webkit-transition: .4s;
-    transition: .4s;
+    -webkit-transition: 0.4s;
+    transition: 0.4s;
 }
 
 input:checked + .slider {
@@ -102,12 +115,12 @@ input:checked + .slider:before {
 }
 
 .auth-prompt {
-    position:fixed;
+    position: fixed;
     left: 50%;
-    top:50%;
-    margin-left:-100px;
-    padding:15px;
-    width:250px;
+    top: 50%;
+    margin-left: -100px;
+    padding: 15px;
+    width: 250px;
     border: 1px solid #444;
     color: #edffff;
     background: #303336;
@@ -118,12 +131,12 @@ input:checked + .slider:before {
 }
 
 .auth-prompt label {
-    display:block;
-    margin-bottom:5px;
+    display: block;
+    margin-bottom: 5px;
 }
 
 .auth-prompt input {
-    margin-bottom:10px;
+    margin-bottom: 10px;
 }
 
 button {
@@ -157,15 +170,14 @@ button {
 
 #toolbar {
     position: absolute;
-    top: 50%;
-    left: 0;
-    display: inline;
-    margin: 10px;
-    padding: 0px;
-    background: white;
+    top: 45px;
+    right: 3px;
+}
+#toolbar > .toolbar > .cesium-button {
+    padding: 4px 4px;
 }
 
-#submitExtent{
+#submitExtent {
     visibility: hidden;
     position: absolute;
     left: 50%;

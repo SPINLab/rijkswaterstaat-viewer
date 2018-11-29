@@ -49,27 +49,6 @@
 }
 
 /*
-css rules for the draw helper components
-*/
-
-.toolbar {
-    margin: 0px;
-    padding: 0px;
-    background: white;
-}
-
-.toolbar > .button {
-    margin: 5px;
-    padding: 5px;
-    border: 1px solid #eee;
-    cursor: pointer;
-}
-
-.toolbar > .button:hover {
-    background: #eee;
-}
-
-/*
 css rules for the infowindow
 */
 
