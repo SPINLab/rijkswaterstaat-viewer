@@ -15,9 +15,7 @@ providers.terrain = {
         }),
         new Cesium.ProviderViewModel({
             name: 'World Ellipsoid',
-            iconUrl: Cesium.buildModuleUrl(
-                'Widgets/Images/TerrainProviders/Ellipsoid.png'
-            ),
+            iconUrl: Cesium.buildModuleUrl('Widgets/Images/TerrainProviders/Ellipsoid.png'),
             creationFunction: function() {
                 return providers.terrain.ellipsoid;
             }
@@ -130,9 +128,7 @@ providers.imagery = {
     viewModels: [
         new Cesium.ProviderViewModel({
             name: 'PDOK Luchtfoto 2016',
-            iconUrl: Cesium.buildModuleUrl(
-                'Widgets/Images/ImageryProviders/bingAerial.png'
-            ),
+            iconUrl: Cesium.buildModuleUrl('Widgets/Images/ImageryProviders/bingAerial.png'),
             tooltip: 'PDOK Luchtfoto 2016 25cm',
             creationFunction: function() {
                 return providers.imagery.ortho2016wms;
@@ -140,9 +136,7 @@ providers.imagery = {
         }),
         new Cesium.ProviderViewModel({
             name: 'PDOK Luchtfoto 2017',
-            iconUrl: Cesium.buildModuleUrl(
-                'Widgets/Images/ImageryProviders/bingAerial.png'
-            ),
+            iconUrl: Cesium.buildModuleUrl('Widgets/Images/ImageryProviders/bingAerial.png'),
             tooltip: 'PDOK Luchtfoto 2017 25cm',
             creationFunction: function() {
                 return providers.imagery.ortho2017wms;
@@ -150,9 +144,7 @@ providers.imagery = {
         }),
         new Cesium.ProviderViewModel({
             name: 'BRT',
-            iconUrl: Cesium.buildModuleUrl(
-                'Widgets/Images/ImageryProviders/openStreetMap.png'
-            ),
+            iconUrl: Cesium.buildModuleUrl('Widgets/Images/ImageryProviders/openStreetMap.png'),
             tooltip: 'Basis Registratie Topografie',
             creationFunction: function() {
                 return providers.imagery.BRT;
@@ -180,9 +172,7 @@ providers.tilesets.mesh = {
                 tileset.readyPromise.then(function() {
                     const bounding = tileset._root._boundingVolume;
                     const center = bounding.boundingSphere.center;
-                    const cart = Cesium.Ellipsoid.WGS84.cartesianToCartographic(
-                        center
-                    );
+                    const cart = Cesium.Ellipsoid.WGS84.cartesianToCartographic(center);
 
                     const surface = Cesium.Cartesian3.fromRadians(
                         cart.longitude,
@@ -199,9 +189,7 @@ providers.tilesets.mesh = {
                         surface,
                         new Cesium.Cartesian3()
                     );
-                    tileset.modelMatrix = Cesium.Matrix4.fromTranslation(
-                        translation
-                    );
+                    tileset.modelMatrix = Cesium.Matrix4.fromTranslation(translation);
                 });
             }
         }
@@ -244,9 +232,7 @@ providers.tilesets.pointcloud = {
                 tileset.readyPromise.then(function() {
                     const bounding = tileset._root._boundingVolume;
                     const center = bounding.boundingSphere.center;
-                    const cart = Cesium.Ellipsoid.WGS84.cartesianToCartographic(
-                        center
-                    );
+                    const cart = Cesium.Ellipsoid.WGS84.cartesianToCartographic(center);
 
                     const surface = Cesium.Cartesian3.fromRadians(
                         cart.longitude,
@@ -263,9 +249,7 @@ providers.tilesets.pointcloud = {
                         surface,
                         new Cesium.Cartesian3()
                     );
-                    tileset.modelMatrix = Cesium.Matrix4.fromTranslation(
-                        translation
-                    );
+                    tileset.modelMatrix = Cesium.Matrix4.fromTranslation(translation);
                 });
             }
         }
@@ -360,10 +344,7 @@ providers.entities = {
     },
     addAll: function() {
         for (let loadFunction of Object.values(this)) {
-            if (
-                typeof loadFunction === 'function' &&
-                loadFunction.name !== 'addAll'
-            ) {
+            if (typeof loadFunction === 'function' && loadFunction.name !== 'addAll') {
                 loadFunction.call(this);
             }
         }
