@@ -3,13 +3,40 @@ const toolbar = drawHelper.addToolbar(document.getElementById('toolbar'), {
     buttons: ['extent']
 });
 const getGeometryQuery = `PREFIX geo: <http://www.opengis.net/ont/geosparql#>
-select ?geom
-where {
-    ?s ?p ?geom .
+PREFIX geof: <http://www.opengis.net/def/function/geosparql/>
 
-    filter (?s= <%s>)
-    . filter (datatype(?geom) = geo:wktLiteral)
+select ?subject ?geometryWKT
+%s
+where {
+?subject geo:hasGeometry/geo:asWKT ?geometryWKT .
+
+FILTER (
+geof:sfWithin(?geometryWKT, '''
+%s
+'''^^geo:wktLiteral))
 }`;
+
+const buildBoundingBoxQuery = function(wkt) {
+    let graphs = '';
+    if (diskToggle.checked === true) {
+        graphs += 'from <http://www.rijkswaterstaat.nl/linked_data/disk/> ';
+    }
+    if (kerngisToggle.checked === true) {
+        graphs += 'from <http://www.rijkswaterstaat.nl/linked_data/kerngis/> ';
+    }
+    if (ultimoToggle.checked === true) {
+        graphs += 'from <http://www.rijkswaterstaat.nl/linked_data/ultimo/> ';
+    }
+
+    let query = '';
+    if (graphs.length === 0) {
+        entity.description = 'No databases selected to query..';
+        return query;
+    }
+
+    query = vsprintf(getGeometryQuery, [graphs, wkt]);
+    return query;
+};
 
 let extentPrimitive = new DrawHelper.ExtentPrimitive({
     extent: new Cesium.Rectangle(0, 0, 0, 0),
@@ -48,12 +75,12 @@ submitBtn.addEventListener('click', function() {
     const bbox = [upperleft, upperright, lowerright, lowerleft, upperleft];
     const wkt = polygonToWKT(bbox);
 
-    const query = buildQuery(wkt);
+    const query = buildBoundingBoxQuery(wkt);
 
     if (query !== '') {
         auth.prompt().then(function() {
             SparQLQuery(SparQLServer, query).then(function(data) {
-                const geometries = filterGeometries(data.results.bindings);
+                drawGeometries(data.results.bindings);
             });
         });
     }
@@ -66,25 +93,18 @@ toolbar.addListener('removeDrawed', function() {
     extentPrimitive.setExtent(new Cesium.Rectangle(0, 0, 0, 0));
 });
 
-function filterGeometries(data) {
-    for (let i in data) {
-        if (data[i].property.value === 'http://www.opengis.net/ont/geosparql#hasGeometry') {
-            const query = vsprintf(getGeometryQuery, data[i].value.value);
-            auth.prompt().then(function() {
-                SparQLQuery(SparQLServer, query).then(function(data) {
-                    drawGeometry(data.results.bindings[0].geom.value);
-                });
-            });
-        }
-    }
-}
-
 const drawnGeometries = new Cesium.Entity({
     name: 'drawn',
     show: true
 });
 
-function drawGeometry(geom) {
+const createBillboardImage = function(color) {
+    const pinBuilder = new Cesium.PinBuilder();
+    const image = pinBuilder.fromColor(Cesium.Color.fromCssColorString(color), 48).toDataURL();
+    return image;
+};
+
+const drawGeometry = function(geom, subject) {
     geom = removeZ(geom);
     const wkt = new Wkt.Wkt();
     wkt.read(geom);
@@ -102,6 +122,14 @@ function drawGeometry(geom) {
         .then(function() {
             for (let entity of source.entities.values) {
                 if (typeof entity.billboard !== 'undefined') {
+                    if (subject.includes('disk')) {
+                        entity.billboard.image = createBillboardImage(colors.disk);
+                    } else if (subject.includes('kerngis')) {
+                        entity.billboard.image = createBillboardImage(colors.kerngis);
+                    } else if (subject.includes('ultimo')) {
+                        entity.billboard.image = createBillboardImage(colors.ultimo);
+                    }
+
                     viewer.entities.add({
                         parent: drawnGeometries,
                         position: entity.position,
@@ -118,4 +146,10 @@ function drawGeometry(geom) {
             }
             viewer.scene.requestRender();
         });
-}
+};
+
+const drawGeometries = function(data) {
+    for (let subject of data) {
+        drawGeometry(subject.geometryWKT.value, subject.subject.value);
+    }
+};

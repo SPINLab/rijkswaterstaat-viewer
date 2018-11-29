@@ -8,6 +8,11 @@ const namespaces = ['22-rdf-syntax-ns#', 'rdf-schema#', 'geosparql#'];
 const SparQLServer = 'http://148.251.106.132:8092/repositories/rwsld';
 const defaultColor = Cesium.Color.YELLOW.withAlpha(0.5);
 const highlightColor = Cesium.Color.RED.withAlpha(0.5);
+const colors = {
+    disk: '#4286f4',
+    kerngis: '#f45941',
+    ultimo: '#c141f4'
+};
 
 // Viewer
 const viewer = new Cesium.Viewer('cesiumContainer', {
