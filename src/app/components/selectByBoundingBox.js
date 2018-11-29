@@ -90,7 +90,7 @@ function drawGeometry(geom) {
     wkt.read(geom);
     let geojson = wkt.toJson();
 
-    geojson = reprojectGeojson(geojson, 'EPSG:28992', 'EPSG:4326');
+    geojson = reprojectGeometry(geojson, 'EPSG:28992', 'EPSG:4326');
 
     const source = new Cesium.GeoJsonDataSource();
 
