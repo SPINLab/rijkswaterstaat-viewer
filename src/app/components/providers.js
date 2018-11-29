@@ -136,6 +136,40 @@ providers.baseLayers = {
     ]
 };
 
+providers.imagery = {
+    bag: new Cesium.ImageryLayer(
+        new Cesium.WebMapServiceImageryProvider({
+            url: 'https://geodata.nationaalgeoregister.nl/bag/wms',
+            layers: 'pand',
+            parameters: {
+                transparent: 'true',
+                format: 'image/png'
+            },
+            credit: new Cesium.Credit('PDOK')
+        }),
+        { show: false }
+    ),
+    brk: new Cesium.ImageryLayer(
+        new Cesium.WebMapServiceImageryProvider({
+            url: 'https://geodata.nationaalgeoregister.nl/kadastralekaartv3/wms',
+            layers: 'perceel',
+            parameters: {
+                transparent: 'true',
+                format: 'image/png'
+            },
+            credit: new Cesium.Credit('PDOK')
+        }),
+        { show: false }
+    ),
+    addImagery: function() {
+        for (let layer of Object.values(this)) {
+            if (typeof layer === 'object') {
+                viewer.scene.imageryLayers.add(layer);
+            }
+        }
+    }
+};
+
 providers.tilesets = {};
 providers.tilesets.mesh = {
     meshTileset: new Cesium.Cesium3DTileset({

@@ -37,6 +37,7 @@ viewer.homeButton.viewModel.command.beforeExecute.addEventListener(function(comm
     commandInfo.cancel = true;
 });
 
+providers.imagery.addImagery();
 providers.tilesets.pointcloud.addTilesets();
 providers.tilesets.pointcloud.offsetTilesets(6);
 providers.tilesets.mesh.addTilesets();
@@ -127,6 +128,16 @@ ahn2Toggle.addEventListener('change', function() {
     } else {
         providers.tilesets.pointcloud.ahn2Tileset.show = false;
     }
+    viewer.scene.requestRender();
+});
+
+bagToggle.addEventListener('change', function() {
+    providers.imagery.bag.show = this.checked;
+    viewer.scene.requestRender();
+});
+
+brkToggle.addEventListener('change', function() {
+    providers.imagery.brk.show = this.checked;
     viewer.scene.requestRender();
 });
 
