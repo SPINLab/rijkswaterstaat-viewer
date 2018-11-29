@@ -170,8 +170,11 @@ button {
 
 #toolbar {
     position: absolute;
-    top: 45px;
-    right: 3px;
+    bottom: 155px;
+    right: 5px;
+}
+#toolbar > .toolbar {
+    display: flex;
 }
 #toolbar > .toolbar > .cesium-button {
     padding: 4px 4px;
