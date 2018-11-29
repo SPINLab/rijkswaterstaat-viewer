@@ -1,8 +1,6 @@
 'use strict';
 
 // CONSTANTS
-Cesium.Ion.defaultAccessToken =
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJiNmYzNDQyYi01NjA1LTRlMGEtYjIwNy1jYTdlYjI0YjRjYTgiLCJpZCI6NDk1LCJzY29wZXMiOlsiYXNyIiwiZ2MiXSwiaWF0IjoxNTM5MzQ5MDIyfQ.cGZC70v3soK3viTM4BqSonUWuP4zppbmISw6ZX_3Qwc';
 const pointcloudHeightOffset = 6;
 const meshHeightOffset = 50;
 const homeView = { x: 3902197, y: 334558, z: 5047216 };
