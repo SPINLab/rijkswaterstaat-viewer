@@ -154,6 +154,26 @@ const drawGeometry = function(geom, subject) {
                         polygon: entity.polygon,
                         description: loadingDescription
                     });
+                } else if (typeof entity.polyline !== 'undefined') {
+                    if (subject.includes('disk')) {
+                        entity.polyline.material = new Cesium.Color.fromCssColorString(colors.disk);
+                    } else if (subject.includes('kerngis')) {
+                        entity.polyline.material = new Cesium.Color.fromCssColorString(
+                            colors.kerngis
+                        );
+                    } else if (subject.includes('ultimo')) {
+                        entity.polyline.material = new Cesium.Color.fromCssColorString(
+                            colors.ultimo
+                        );
+                    }
+
+                    viewer.entities.add({
+                        parent: drawnGeometries,
+                        polyline: entity.polyline,
+                        description: loadingDescription
+                    });
+                } else {
+                    console.log(entity);
                 }
             }
             viewer.scene.requestRender();
