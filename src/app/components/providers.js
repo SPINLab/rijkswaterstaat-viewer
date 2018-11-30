@@ -275,67 +275,22 @@ providers.tilesets.pointcloud = {
 };
 
 providers.entities = {
-    kunstwerken: new Cesium.Entity({
-        name: 'kunstwerken',
+    disk: new Cesium.Entity({
+        name: 'disk',
+        show: true
+    }),
+    kerngis: new Cesium.Entity({
+        name: 'kerngis',
         show: false
     }),
-    beheerobjecten: new Cesium.Entity({
-        name: 'beheerobjecten',
+    ultimo: new Cesium.Entity({
+        name: 'ultimo',
         show: false
     }),
     bim: new Cesium.Entity({
         name: 'bim',
         show: false
     }),
-    addKunstwerken: function() {
-        const source = new Cesium.GeoJsonDataSource({
-            name: 'kunstwerken'
-        });
-
-        source
-            .load('../data/features/A10A1A6_kunstwerken.json', {
-                fill: defaultColor,
-                clampToGround: true
-            })
-            .then(
-                function() {
-                    for (let entity of source.entities.values) {
-                        viewer.entities.add({
-                            parent: this.kunstwerken,
-                            polygon: entity.polygon,
-                            properties: entity.properties,
-                            name: entity.properties.NAAM,
-                            description: loadingDescription
-                        });
-                    }
-                }.bind(this)
-            );
-    },
-    addBeheerobjecten: function() {
-        const source = new Cesium.GeoJsonDataSource({
-            name: 'beheerobjecten'
-        });
-
-        source
-            .load('../data/features/A10_beheerobjecten.json', {
-                color: defaultColor,
-                clampToGround: true
-            })
-            .then(
-                function() {
-                    for (let entity of source.entities.values) {
-                        viewer.entities.add({
-                            parent: this.beheerobjecten,
-                            position: entity.position,
-                            billboard: entity.billboard,
-                            properties: entity.properties,
-                            name: entity.properties.naam,
-                            description: loadingDescription
-                        });
-                    }
-                }.bind(this)
-            );
-    },
     addBIM: function() {
         const source = new Cesium.GeoJsonDataSource({
             name: 'BIM'
@@ -343,7 +298,7 @@ providers.entities = {
 
         source
             .load('../data/features/bim_locations.json', {
-                fill: defaultColor,
+                fill: Cesium.Color.YELLOW.withAlpha(0.5),
                 clampToGround: true
             })
             .then(

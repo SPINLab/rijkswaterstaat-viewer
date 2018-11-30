@@ -6,8 +6,7 @@ const meshHeightOffset = 50;
 const homeView = { x: 3902197, y: 334558, z: 5047216 };
 const namespaces = ['22-rdf-syntax-ns#', 'rdf-schema#', 'geosparql#'];
 const SparQLServer = 'http://148.251.106.132:8092/repositories/rwsld';
-const defaultColor = Cesium.Color.YELLOW.withAlpha(0.5);
-const highlightColor = Cesium.Color.RED.withAlpha(0.5);
+const highlightColor = Cesium.Color.YELLOW.withAlpha(0.5);
 const colors = {
     disk: '#4286f4',
     kerngis: '#f45941',
@@ -53,7 +52,10 @@ viewer.selectedEntityChanged.addEventListener(function(entity) {
         if (typeof entity.polygon !== 'undefined') {
             if (entity !== lastPick) {
                 if (typeof lastPick !== 'undefined') {
-                    lastPick.polygon.material = defaultColor;
+                    const database = Cesium.Property.getValueOrUndefined(
+                        lastPick.properties.database
+                    );
+                    lastPick.polygon.material = Cesium.Color.fromCssColorString(colors[database]);
                     viewer.scene.requestRender();
                 }
                 lastPick = entity;
@@ -73,7 +75,8 @@ viewer.selectedEntityChanged.addEventListener(function(entity) {
             updateDescription(entity);
         } else {
             if (typeof lastPick !== 'undefined') {
-                lastPick.polygon.material = defaultColor;
+                const database = Cesium.Property.getValueOrUndefined(lastPick.properties.database);
+                lastPick.polygon.material = Cesium.Color.fromCssColorString(colors[database]);
                 viewer.scene.requestRender();
                 if (lastPick.parent.name === 'bim') {
                     lastPick.polygon.show = true;
@@ -85,7 +88,8 @@ viewer.selectedEntityChanged.addEventListener(function(entity) {
         }
     } else {
         if (typeof lastPick !== 'undefined') {
-            lastPick.polygon.material = defaultColor;
+            const database = Cesium.Property.getValueOrUndefined(lastPick.properties.database);
+            lastPick.polygon.material = Cesium.Color.fromCssColorString(colors[database]);
             viewer.scene.requestRender();
             if (lastPick.parent.name === 'bim') {
                 lastPick.polygon.show = true;
@@ -97,13 +101,18 @@ viewer.selectedEntityChanged.addEventListener(function(entity) {
     }
 });
 
-kunstwerkenToggle.addEventListener('change', function() {
-    providers.entities.kunstwerken.show = this.checked;
+diskShowToggle.addEventListener('change', function() {
+    providers.entities.disk.show = this.checked;
     viewer.scene.requestRender();
 });
 
-beheerobjectenToggle.addEventListener('change', function() {
-    providers.entities.beheerobjecten.show = this.checked;
+kerngisShowToggle.addEventListener('change', function() {
+    providers.entities.kerngis.show = this.checked;
+    viewer.scene.requestRender();
+});
+
+ultimoShowToggle.addEventListener('change', function() {
+    providers.entities.ultimo.show = this.checked;
     viewer.scene.requestRender();
 });
 

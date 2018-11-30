@@ -96,11 +96,6 @@ toolbar.addListener('removeDrawed', function() {
     extentPrimitive.setExtent(new Cesium.Rectangle(0, 0, 0, 0));
 });
 
-const drawnGeometries = new Cesium.Entity({
-    name: 'drawn',
-    show: true
-});
-
 const createBillboardImage = function(color) {
     const pinBuilder = new Cesium.PinBuilder();
     const image = pinBuilder.fromColor(Cesium.Color.fromCssColorString(color), 48).toDataURL();
@@ -119,61 +114,78 @@ const drawGeometry = function(geom, subject) {
 
     source
         .load(geojson, {
-            fill: defaultColor,
             clampToGround: true
         })
         .then(function() {
             for (let entity of source.entities.values) {
+                let database;
+                if (subject.includes('disk')) {
+                    database = 'disk';
+                } else if (subject.includes('kerngis')) {
+                    database = 'kerngis';
+                } else if (subject.includes('ultimo')) {
+                    database = 'ultimo';
+                }
+
                 if (typeof entity.billboard !== 'undefined') {
-                    if (subject.includes('disk')) {
+                    if (database === 'disk') {
                         entity.billboard.image = createBillboardImage(colors.disk);
-                    } else if (subject.includes('kerngis')) {
+                    } else if (database === 'kerngis') {
                         entity.billboard.image = createBillboardImage(colors.kerngis);
-                    } else if (subject.includes('ultimo')) {
+                    } else if (database === 'ultimo') {
                         entity.billboard.image = createBillboardImage(colors.ultimo);
                     }
 
                     viewer.entities.add({
-                        parent: drawnGeometries,
+                        parent: providers.entities[database],
                         position: entity.position,
                         billboard: entity.billboard,
-                        description: loadingDescription
+                        description: loadingDescription,
+                        properties: {
+                            database: database
+                        }
                     });
                 } else if (typeof entity.polygon !== 'undefined') {
-                    if (subject.includes('disk')) {
+                    if (database === 'disk') {
                         entity.polygon.material = new Cesium.Color.fromCssColorString(colors.disk);
-                    } else if (subject.includes('kerngis')) {
+                    } else if (database === 'kerngis') {
                         entity.polygon.material = new Cesium.Color.fromCssColorString(
                             colors.kerngis
                         );
-                    } else if (subject.includes('ultimo')) {
+                    } else if (database === 'ultimo') {
                         entity.polygon.material = new Cesium.Color.fromCssColorString(
                             colors.ultimo
                         );
                     }
 
                     viewer.entities.add({
-                        parent: drawnGeometries,
+                        parent: providers.entities[database],
                         polygon: entity.polygon,
-                        description: loadingDescription
+                        description: loadingDescription,
+                        properties: {
+                            database: database
+                        }
                     });
                 } else if (typeof entity.polyline !== 'undefined') {
-                    if (subject.includes('disk')) {
+                    if (database === 'disk') {
                         entity.polyline.material = new Cesium.Color.fromCssColorString(colors.disk);
-                    } else if (subject.includes('kerngis')) {
+                    } else if (database === 'kerngis') {
                         entity.polyline.material = new Cesium.Color.fromCssColorString(
                             colors.kerngis
                         );
-                    } else if (subject.includes('ultimo')) {
+                    } else if (database === 'ultimo') {
                         entity.polyline.material = new Cesium.Color.fromCssColorString(
                             colors.ultimo
                         );
                     }
 
                     viewer.entities.add({
-                        parent: drawnGeometries,
+                        parent: providers.entities[database],
                         polyline: entity.polyline,
-                        description: loadingDescription
+                        description: loadingDescription,
+                        properties: {
+                            database: database
+                        }
                     });
                 } else {
                     console.log(entity);
