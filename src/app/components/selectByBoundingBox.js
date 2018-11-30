@@ -137,6 +137,18 @@ const drawGeometry = function(geom, subject) {
                         description: loadingDescription
                     });
                 } else if (typeof entity.polygon !== 'undefined') {
+                    if (subject.includes('disk')) {
+                        entity.polygon.material = new Cesium.Color.fromCssColorString(colors.disk);
+                    } else if (subject.includes('kerngis')) {
+                        entity.polygon.material = new Cesium.Color.fromCssColorString(
+                            colors.kerngis
+                        );
+                    } else if (subject.includes('ultimo')) {
+                        entity.polygon.material = new Cesium.Color.fromCssColorString(
+                            colors.ultimo
+                        );
+                    }
+
                     viewer.entities.add({
                         parent: drawnGeometries,
                         polygon: entity.polygon,
