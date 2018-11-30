@@ -2,6 +2,9 @@ const drawHelper = new DrawHelper(viewer);
 const toolbar = drawHelper.addToolbar(document.getElementById('toolbar'), {
     buttons: ['extent']
 });
+clearDrawn = document.getElementById('clear-drawn');
+const submitBtn = document.getElementById('submitExtent');
+
 const getGeometryQuery = `PREFIX geo: <http://www.opengis.net/ont/geosparql#>
 PREFIX geof: <http://www.opengis.net/def/function/geosparql/>
 
@@ -52,8 +55,6 @@ let extentPrimitive = new DrawHelper.ExtentPrimitive({
 viewer.scene.primitives.add(extentPrimitive);
 extentPrimitive.setEditable();
 
-const submitBtn = document.getElementById('submitExtent');
-
 toolbar.addListener('extentCreated', function(event) {
     const extent = event.extent;
     extentPrimitive.setExtent(extent);
@@ -84,6 +85,8 @@ submitBtn.addEventListener('click', function() {
             });
         });
     }
+
+    clearDrawn.click();
 
     submitBtn.disabled = true;
     submitBtn.style.visibility = 'hidden';

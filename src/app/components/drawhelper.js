@@ -964,6 +964,7 @@ const DrawHelper = (function() {
             function addIcon(id, url, title, callback) {
                 var div = document.createElement('DIV');
                 div.className = 'cesium-button';
+                div.id = id;
                 div.title = title;
                 toolbar.appendChild(div);
                 div.onclick = callback;
@@ -977,7 +978,7 @@ const DrawHelper = (function() {
 
             var scene = drawHelper._scene;
 
-            addIcon('extent', options.extentIcon, 'Click to start drawing an Extent', function() {
+            addIcon('draw-extent', options.extentIcon, 'Click to start drawing an Extent', function() {
                 drawHelper.startDrawingExtent({
                     callback: function(extent) {
                         _self.executeListeners({name: 'extentCreated', extent: extent});
@@ -990,7 +991,7 @@ const DrawHelper = (function() {
             var div = document.createElement('DIV');
             div.className = 'divider';
             toolbar.appendChild(div);
-            addIcon('clear', options.clearIcon, 'Remove all primitives', function() {
+            addIcon('clear-drawn', options.clearIcon, 'Remove all primitives', function() {
                 // scene.primitives.removeAll();
                 drawHelper.removePrimitives(
                     function(extent) {
