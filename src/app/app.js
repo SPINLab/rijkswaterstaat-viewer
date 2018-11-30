@@ -145,21 +145,21 @@ brkToggle.addEventListener('change', function() {
 });
 
 diskToggle.addEventListener('change', function() {
-    if (viewer.selectedEntity.id !== 'None') {
+    if (typeof viewer.selectedEntity !== 'undefined' && viewer.selectedEntity.id !== 'None') {
         viewer.selectedEntity.description = loadingDescription;
         updateDescription(viewer.selectedEntity);
     }
 });
 
 kerngisToggle.addEventListener('change', function() {
-    if (viewer.selectedEntity.id !== 'None') {
+    if (typeof viewer.selectedEntity !== 'undefined' && viewer.selectedEntity.id !== 'None') {
         viewer.selectedEntity.description = loadingDescription;
         updateDescription(viewer.selectedEntity);
     }
 });
 
 ultimoToggle.addEventListener('change', function() {
-    if (viewer.selectedEntity.id !== 'None') {
+    if (typeof viewer.selectedEntity !== 'undefined' && viewer.selectedEntity.id !== 'None') {
         viewer.selectedEntity.description = loadingDescription;
         updateDescription(viewer.selectedEntity);
     }
