@@ -1,44 +1,15 @@
-const baseQueries = {
-    polygon: `PREFIX geo: <http://www.opengis.net/ont/geosparql#>
-    PREFIX geof: <http://www.opengis.net/def/function/geosparql/>
+'use strict';
 
-    select ?subject ?property ?value
-    %s
-    where {
-        ?subject geo:hasGeometry ?geometry;
-              ?property ?value.
-        ?geometry geo:asWKT ?geometryWKT .
-
-        FILTER (
-            geof:sfWithin(?geometryWKT, '''
-            %s
-            '''^^geo:wktLiteral))
-    }`,
-    point: `PREFIX geo: <http://www.opengis.net/ont/geosparql#>
-    PREFIX geof: <http://www.opengis.net/def/function/geosparql/>
-
-    select ?subject ?property ?value
-    %s
-    where {
-        ?subject geo:hasGeometry ?geometry;
-              ?property ?value.
-        ?geometry geo:asWKT ?geometryWKT .
-
-        FILTER (
-            geof:sfWithin(?geometryWKT, geof:buffer('''
-            %s
-            '''^^geo:wktLiteral, 20)))
-    }`
-};
-
-const SparQLQuery = function(serverUrl, query) {
+const SparQLQuery = function(serverUrl, query, authorize) {
     return new Promise(function(resolve, reject) {
         const headers = new Headers();
 
-        headers.append(
-            'Authorization',
-            'Basic ' + base64.encode(auth.username + ':' + auth.password)
-        );
+        if (authorize) {
+            headers.append(
+                'Authorization',
+                'Basic ' + base64.encode(auth.username + ':' + auth.password)
+            );
+        }
         headers.append('Accept', 'application/json');
         headers.append('Content-type', 'application/x-www-form-urlencoded');
 
@@ -46,7 +17,7 @@ const SparQLQuery = function(serverUrl, query) {
             method: 'POST',
             headers: headers,
             mode: 'cors',
-            body: 'query=' + query
+            body: 'query=' + encodeURIComponent(query)
         })
             .then(function(response) {
                 return response.json();
@@ -55,104 +26,113 @@ const SparQLQuery = function(serverUrl, query) {
                 resolve(j);
             })
             .catch(function() {
-                auth.username = '';
-                auth.password = '';
+                if (authorize) {
+                    auth.username = '';
+                    auth.password = '';
+                }
             });
     });
 };
 
-const buildQuery = function(wkt) {
-    let graphs = '';
-    if (diskToggle.checked === true) {
-        graphs += 'from <http://www.rijkswaterstaat.nl/linked_data/disk/> ';
-    }
-    if (kerngisToggle.checked === true) {
-        graphs += 'from <http://www.rijkswaterstaat.nl/linked_data/kerngis/> ';
-    }
-    if (ultimoToggle.checked === true) {
-        graphs += 'from <http://www.rijkswaterstaat.nl/linked_data/ultimo/> ';
-    }
-
-    let query = '';
-    if (graphs.length === 0) {
-        entity.description = 'No databases selected to query..';
-        return query;
-    }
-
-    const shape = wkt.split(' ')[0];
-    if (shape === 'POLYGON') {
-        query = vsprintf(baseQueries.polygon, [graphs, wkt]);
-    } else if (shape === 'POINT') {
-        query = vsprintf(baseQueries.point, [graphs, wkt]);
-    }
-    return query;
+const parseURI = function(uri) {
+    uri = uri.replace('www.rijkswaterstaat.nl/linked_data/', '148.251.106.132:8092/resource/rws.');
+    uri = uri.replace('otl.rws.nl/otl#', '148.251.106.132:8092/resource/otl/');
+    return uri;
 };
 
-const buildDescription = function(entityData) {
+const parseValidationData = function(data) {
+    const validationData = {};
+    for (let entry of data.results.bindings) {
+        validationData[entry.predicate.value] = entry.comment.value;
+    }
+    return validationData;
+};
+
+const buildDescription = function(database, feature, featureInfo, dataValidation) {
+    let invalidData;
+    if (typeof dataValidation !== 'undefined') {
+        dataValidation = parseValidationData(dataValidation);
+        invalidData = Object.keys(dataValidation);
+    }
+
     let description = `
     <div data-simplebar class="wrap">
     <table class="table-fill">
     <tbody class="table-hover">
+
+    <thead class="graph-title"><tr><th colspan="2">${database.toUpperCase()}</th></tr></thead>
+    <thead class="subject-title"><tr><th colspan="2"><a id="featureURI" target="_blank" href="http://148.251.106.132:8092/resource/rws.${database}/${feature}">${feature}</a></th></tr></thead>
     `;
 
-    let currentGraph = '';
-    let currentSubject = '';
-    let currentSubjectValue = '';
-    let i = 1;
-    for (const result of entityData.results.bindings) {
-        let property = result['property']['value'].split('/');
-        property = property[property.length - 1];
-        for (const s of namespaces) {
-            property = property.replace(s, '');
-        }
-
-        let value;
-        let valueList = result['value']['value'].split('/');
-        if (valueList[0] === 'http:' && valueList[4] !== 'schema') {
-            value =
-                '<a target="_blank" href="http://148.251.106.132:8092/resource/rws.' +
-                currentGraph +
-                '/' +
-                valueList[valueList.length - 1] +
-                '">GraphDB</a>';
-        } else {
-            if (valueList.length > 4) {
-                value = valueList[valueList.length - 1];
-            } else {
-                value = result['value']['value'];
+    for (let result of featureInfo.results.bindings) {
+        let comment;
+        let predicate = result['p']['value'];
+        if (typeof dataValidation !== 'undefined') {
+            if (invalidData.includes(predicate)) {
+                comment = dataValidation[predicate];
             }
         }
+        predicate = predicate.split('/');
+        predicate = predicate[predicate.length - 1];
+        for (let ns of namespaces) {
+            predicate = predicate.replace(ns, '');
+        }
+        predicate = predicate.replace(feature.toLowerCase() + '_', '');
 
-        const graph = result['subject']['value'].split('/')[4];
-        const subject = result['subject']['value'].split('/')[5];
-
-        if (graph !== currentGraph) {
-            description += vsprintf(
-                '<thead class="graph-title"><tr><th class="text-left">%s</th><th class="text-left"></th></tr></thead>',
-                [graph.toUpperCase()]
-            );
-            currentGraph = graph;
-            i = 1;
+        let value;
+        const objectValue = result['o']['value'];
+        const objectType = result['o']['type'];
+        let objectID = result['o']['value'].split('/');
+        objectID = objectID[objectID.length - 1];
+        if (objectType === 'uri') {
+            if (
+                objectValue.startsWith('http://www.rijkswaterstaat.nl/linked_data/') ||
+                objectValue.startsWith('http://148.251.106.132:8092/resource/rws.') ||
+                objectValue.startsWith('http://otl.rws.nl/otl#')
+            ) {
+                const objectURI = parseURI(objectValue);
+                value = `<span style="border-bottom: 1px solid; cursor: pointer;" onclick="window.onURI('${objectURI}')" >${objectID}</span>`;
+            } else {
+                value = `<a target="_blank" href="${objectValue}">${objectID}</a>`;
+            }
+        } else {
+            value = objectValue;
         }
 
-        if (subject !== currentSubject) {
-            currentSubjectValue = value;
-            description += vsprintf(
-                '<thead class="subject-title"><tr><th class="text-left"> <a target="_blank" href="http://148.251.106.132:8092/resource/rws.%s/%s">%s</th><th class="text-left"></th></tr></thead>',
-                [currentGraph, subject, currentSubjectValue]
-            );
-            currentSubject = subject;
-            i += 1;
-        }
-        property = property.replace(currentSubjectValue.toLowerCase() + '_', '');
+        value = value.replace(/<img src=/g, '<img style="width: 100%;" src=');
 
-        const entry = `
-        <tr>
-        <td class="text-left">%s</td>
-        <td class="text-left">%s</td>
-        </tr>
-        `;
-        description += vsprintf(entry, [capitalizeFirstLetter(property), value]);
+        let entry;
+
+        if (typeof comment === 'undefined') {
+            entry = `
+                <tr>
+                <td><div style="display: flex; align-items: center;"><span>${capitalizeFirstLetter(
+                    predicate
+                )}</span></div></td>
+                <td><div style="display: flex; align-items: center;"><span>${value}</span></div></td>
+                </tr>
+            `;
+        } else {
+            entry = `
+                <tr>
+                <td><div style="display: flex; align-items: center;"><span>${capitalizeFirstLetter(
+                    predicate
+                )}</span></div></td>
+                <td><div style="display: flex; align-items: center;"><span>${value}</span><div style="color: red; font-weight: bold;" class="tooltip">&nbsp;&nbsp;!<span class="tooltiptext">${comment}</span></div>
+                </div></td>
+                </tr>
+            `;
+        }
+        // TODO improve this hacky filtering step
+        if (
+            !(objectValue.startsWith('x') && objectValue.length > 14 && !objectValue.includes(' '))
+        ) {
+            description += entry;
+        }
+
+        if (predicate === 'label') {
+            description = description.replace(`>${feature}</a>`, `>${value}</a>`);
+        }
     }
     description += `
     </tbody>
@@ -162,14 +142,111 @@ const buildDescription = function(entityData) {
     return description;
 };
 
-const updateDescription = function(entity) {
-    const wkt = entityToWKT(entity);
-    const query = buildQuery(wkt);
-    if (query !== '') {
-        auth.prompt().then(function() {
-            SparQLQuery(SparQLServer, query).then(function(entityData) {
-                entity.description = buildDescription(entityData);
+const updateDescription = function(database, id) {
+    return new Promise(function(resolve, reject) {
+        let query = '';
+        if (database === 'otl') {
+            query = `select *
+                        where {
+                            <http://otl.rws.nl/otl#${id}> ?p ?o .
+                        }`;
+        } else {
+            query = `select *
+                        where {
+                            <http://www.rijkswaterstaat.nl/linked_data/${database}/${id}> ?p ?o .
+                        }`;
+        }
+
+        if (query !== '') {
+            auth.prompt().then(function() {
+                if (database === 'disk') {
+                    const descriptionPromise = SparQLQuery(SparQLServer, query, true);
+                    const dataValidationPromise = SparQLQuery(
+                        SparQLServer,
+                        `PREFIX rws.disk: <http://www.rijkswaterstaat.nl/linked_data/disk/>
+                        PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+                        PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+
+                        select ?predicate ?object ?comment where {
+                            ?_ a rdf:Statement ;
+                            rdf:subject rws.disk:${id} ;
+                            rdf:predicate ?predicate ;
+                            rdf:object ?object ;
+                            rdfs:comment ?comment .
+                        }`,
+                        true
+                    );
+
+                    Promise.all([descriptionPromise, dataValidationPromise])
+                        .then(entityData => {
+                            const description = buildDescription(
+                                database,
+                                id,
+                                entityData[0],
+                                entityData[1]
+                            );
+                            resolve(description);
+                        })
+                        .catch(e => {
+                            reject(e);
+                        });
+                } else {
+                    SparQLQuery(SparQLServer, query, true)
+                        .then(entityData => {
+                            const description = buildDescription(database, id, entityData);
+                            resolve(description);
+                        })
+                        .catch(e => {
+                            reject(e);
+                        });
+                }
             });
+        }
+    });
+};
+
+const updatePointDescription = function(entity) {
+    const fid = Cesium.Property.getValueOrUndefined(entity.properties.FID);
+    const name = Cesium.Property.getValueOrUndefined(entity.properties.Naam);
+    const number = Cesium.Property.getValueOrUndefined(entity.properties.Nr);
+
+    const description = `<div data-simplebar class="wrap">
+    <table class="table-fill">
+    <tbody class="table-hover">
+
+    <thead class="graph-title"><tr><th colspan="2">Feature ${fid}</th></tr></thead>
+
+    <tr><td>Naam</td><td>${name}</td></tr>
+    <tr><td>Nummer</td><td>${number}</td></tr>
+
+    </tbody>
+    </table>
+    </div>`;
+
+    entity.description = description;
+};
+
+const goBack = function() {
+    const uri = descriptionHistory.pop();
+
+    if (typeof uri !== 'undefined') {
+        const uriSplit = uri.split('/');
+        const database =
+            uriSplit[uriSplit.length - 2].split('.')[1] || uriSplit[uriSplit.length - 2];
+        const id = uriSplit[uriSplit.length - 1];
+
+        updateDescription(database, id).then(description => {
+            frame.contentDocument.body.firstChild.innerHTML = description;
         });
     }
 };
+
+{
+    const button = document.createElement('button');
+    button.id = 'backButton';
+    button.className = 'cesium-infoBox-close';
+    button.onclick = goBack;
+    const text = document.createTextNode('<');
+    button.appendChild(text);
+    document.querySelector('.cesium-infoBox').appendChild(button);
+}

@@ -19,6 +19,20 @@ frame.addEventListener(
         cssLink.rel = 'stylesheet';
         cssLink.type = 'text/css';
         viewer.infoBox.frame.contentDocument.head.appendChild(cssLink);
+
+        frame.contentWindow.onURI = function(uri) {
+            const uriSplit = uri.split('/');
+            const database =
+                uriSplit[uriSplit.length - 2].split('.')[1] || uriSplit[uriSplit.length - 2];
+            const id = uriSplit[uriSplit.length - 1];
+
+            const currentURI = frame.contentDocument.getElementById('featureURI').href;
+
+            updateDescription(database, id).then(description => {
+                frame.contentDocument.body.firstChild.innerHTML = description;
+                descriptionHistory.push(currentURI);
+            });
+        };
     },
     false
 );

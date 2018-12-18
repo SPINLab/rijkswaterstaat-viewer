@@ -107,11 +107,23 @@ input:checked + .slider:before {
 
 .cesium-infoBox {
     background: #303336;
+    height: 70%;
+}
+
+.cesium-infoBox-iframe {
+    height: 100% !important;
 }
 
 .cesium-infoBox-title {
     background: #48b;
     font-family: Verdana, Arial, sans-serif;
+}
+
+#backButton {
+    position: absolute;
+    top: 5px;
+    right: 30px;
+    z-index: 9;
 }
 
 .auth-prompt {
@@ -170,8 +182,8 @@ button {
 
 #toolbar {
     position: absolute;
-    bottom: 155px;
-    right: 5px;
+    bottom: 340px;
+    left: 5px;
 }
 #toolbar > .toolbar {
     display: flex;

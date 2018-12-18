@@ -1,7 +1,7 @@
 'use strict';
 
 // CONSTANTS
-const pointcloudHeightOffset = 6;
+const pointcloudHeightOffset = 2.8;
 const meshHeightOffset = 50;
 const homeView = { x: 3902197, y: 334558, z: 5047216 };
 const namespaces = ['22-rdf-syntax-ns#', 'rdf-schema#', 'geosparql#'];
@@ -12,6 +12,8 @@ const colors = {
     kerngis: '#f45941',
     ultimo: '#c141f4'
 };
+const descriptionHistory = [];
+let lastPick;
 
 // Viewer
 const viewer = new Cesium.Viewer('cesiumContainer', {
@@ -41,12 +43,11 @@ viewer.homeButton.viewModel.command.beforeExecute.addEventListener(function(comm
 
 providers.imagery.addImagery();
 providers.tilesets.pointcloud.addTilesets();
-providers.tilesets.pointcloud.offsetTilesets(6);
+providers.tilesets.pointcloud.offsetTilesets(pointcloudHeightOffset);
 providers.tilesets.mesh.addTilesets();
-providers.tilesets.mesh.offsetTilesets(50);
+providers.tilesets.mesh.offsetTilesets(meshHeightOffset);
 providers.entities.addAll();
 
-let lastPick;
 viewer.selectedEntityChanged.addEventListener(function(entity) {
     if (typeof entity !== 'undefined') {
         if (typeof entity.polygon !== 'undefined') {
@@ -69,10 +70,21 @@ viewer.selectedEntityChanged.addEventListener(function(entity) {
                     viewer.scene.requestRender();
                 }
                 entity.description = loadingDescription;
-                updateDescription(entity);
+
+                const database = Cesium.Property.getValueOrUndefined(entity.properties.database);
+                const id = Cesium.Property.getValueOrUndefined(entity.properties.id);
+                updateDescription(database, id).then(description => {
+                    entity.description = description;
+                });
             }
         } else if (typeof entity.billboard !== 'undefined') {
-            updateDescription(entity);
+            const database = Cesium.Property.getValueOrUndefined(entity.properties.database);
+            const id = Cesium.Property.getValueOrUndefined(entity.properties.id);
+            updateDescription(database, id).then(description => {
+                entity.description = description;
+            });
+        } else if (typeof entity.point !== 'undefined') {
+            updatePointDescription(entity);
         } else {
             if (typeof lastPick !== 'undefined') {
                 const database = Cesium.Property.getValueOrUndefined(lastPick.properties.database);
@@ -101,17 +113,17 @@ viewer.selectedEntityChanged.addEventListener(function(entity) {
     }
 });
 
-diskShowToggle.addEventListener('change', function() {
+diskToggle.addEventListener('change', function() {
     providers.entities.disk.show = this.checked;
     viewer.scene.requestRender();
 });
 
-kerngisShowToggle.addEventListener('change', function() {
+kerngisToggle.addEventListener('change', function() {
     providers.entities.kerngis.show = this.checked;
     viewer.scene.requestRender();
 });
 
-ultimoShowToggle.addEventListener('change', function() {
+ultimoToggle.addEventListener('change', function() {
     providers.entities.ultimo.show = this.checked;
     viewer.scene.requestRender();
 });
@@ -143,6 +155,11 @@ ahn2Toggle.addEventListener('change', function() {
     viewer.scene.requestRender();
 });
 
+cmToggle.addEventListener('change', function() {
+    providers.tilesets.pointcloud.cyclomediaA10Tileset.show = this.checked;
+    viewer.scene.requestRender();
+});
+
 bagToggle.addEventListener('change', function() {
     providers.imagery.bag.show = this.checked;
     viewer.scene.requestRender();
@@ -153,23 +170,12 @@ brkToggle.addEventListener('change', function() {
     viewer.scene.requestRender();
 });
 
-diskToggle.addEventListener('change', function() {
-    if (typeof viewer.selectedEntity !== 'undefined' && viewer.selectedEntity.id !== 'None') {
-        viewer.selectedEntity.description = loadingDescription;
-        updateDescription(viewer.selectedEntity);
-    }
+brugToggle.addEventListener('change', function() {
+    providers.entities.brugErasmusgracht.show = this.checked;
+    viewer.scene.requestRender();
 });
 
-kerngisToggle.addEventListener('change', function() {
-    if (typeof viewer.selectedEntity !== 'undefined' && viewer.selectedEntity.id !== 'None') {
-        viewer.selectedEntity.description = loadingDescription;
-        updateDescription(viewer.selectedEntity);
-    }
-});
-
-ultimoToggle.addEventListener('change', function() {
-    if (typeof viewer.selectedEntity !== 'undefined' && viewer.selectedEntity.id !== 'None') {
-        viewer.selectedEntity.description = loadingDescription;
-        updateDescription(viewer.selectedEntity);
-    }
+ahn3PointSize.addEventListener('input', function(e) {
+    providers.tilesets.pointcloud.ahn3Tileset.pointCloudShading.maximumAttenuation = e.target.value;
+    viewer.scene.requestRender();
 });

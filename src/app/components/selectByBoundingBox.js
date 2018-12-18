@@ -5,20 +5,6 @@ const toolbar = drawHelper.addToolbar(document.getElementById('toolbar'), {
 clearDrawn = document.getElementById('clear-drawn');
 const submitBtn = document.getElementById('submitExtent');
 
-const getGeometryQuery = `PREFIX geo: <http://www.opengis.net/ont/geosparql#>
-PREFIX geof: <http://www.opengis.net/def/function/geosparql/>
-
-select ?subject ?geometryWKT
-%s
-where {
-?subject geo:hasGeometry/geo:asWKT ?geometryWKT .
-
-FILTER (
-geof:sfWithin(?geometryWKT, '''
-%s
-'''^^geo:wktLiteral))
-}`;
-
 const buildBoundingBoxQuery = function(wkt) {
     let graphs = '';
     if (diskToggle.checked === true) {
@@ -37,7 +23,20 @@ const buildBoundingBoxQuery = function(wkt) {
         return query;
     }
 
-    query = vsprintf(getGeometryQuery, [graphs, wkt]);
+    query = `PREFIX geo: <http://www.opengis.net/ont/geosparql#>
+    PREFIX geof: <http://www.opengis.net/def/function/geosparql/>
+
+    select ?subject ?geometryWKT
+    ${graphs}
+    where {
+    ?subject geo:hasGeometry/geo:asWKT ?geometryWKT .
+
+    FILTER (
+    geof:sfWithin(?geometryWKT, '''
+    ${wkt}
+    '''^^geo:wktLiteral))
+    }`;
+
     return query;
 };
 
@@ -80,7 +79,7 @@ submitBtn.addEventListener('click', function() {
 
     if (query !== '') {
         auth.prompt().then(function() {
-            SparQLQuery(SparQLServer, query).then(function(data) {
+            SparQLQuery(SparQLServer, query, true).then(function(data) {
                 drawGeometries(data.results.bindings);
             });
         });
@@ -118,6 +117,10 @@ const drawGeometry = function(geom, subject) {
         })
         .then(function() {
             for (let entity of source.entities.values) {
+                // http://www.rijkswaterstaat.nl/linked_data/disk/re9823d452941e5b71e7ea05696e254313eba2e15
+                const subjectParts = subject.split('/');
+                const id = subjectParts[subjectParts.length - 1];
+
                 let database;
                 if (subject.includes('disk')) {
                     database = 'disk';
@@ -142,6 +145,7 @@ const drawGeometry = function(geom, subject) {
                         billboard: entity.billboard,
                         description: loadingDescription,
                         properties: {
+                            id: id,
                             database: database
                         }
                     });
@@ -163,6 +167,7 @@ const drawGeometry = function(geom, subject) {
                         polygon: entity.polygon,
                         description: loadingDescription,
                         properties: {
+                            id: id,
                             database: database
                         }
                     });
@@ -184,6 +189,7 @@ const drawGeometry = function(geom, subject) {
                         polyline: entity.polyline,
                         description: loadingDescription,
                         properties: {
+                            id: id,
                             database: database
                         }
                     });

@@ -217,6 +217,7 @@ providers.tilesets.pointcloud = {
     ahn3Tileset: new Cesium.Cesium3DTileset({
         url: '../data/pointcloud/ahn3/tileset.json',
         show: false,
+        // maximumScreenSpaceError: 16.0,
         pointCloudShading: {
             attenuation: true,
             maximumAttenuation: 2.0
@@ -230,8 +231,9 @@ providers.tilesets.pointcloud = {
             maximumAttenuation: 2.0
         }
     }),
-    zaltbommelBrugTileset: new Cesium.Cesium3DTileset({
-        url: '../data/pointcloud/zaltbommel/tileset.json',
+    cyclomediaA10Tileset: new Cesium.Cesium3DTileset({
+        url: 'http://148.251.106.132:8093/tileset.json',
+        show: false,
         pointCloudShading: {
             attenuation: true,
             maximumAttenuation: 2.0
@@ -291,6 +293,10 @@ providers.entities = {
         name: 'bim',
         show: false
     }),
+    brugErasmusgracht: new Cesium.Entity({
+        name: 'brugErasmusgracht',
+        show: false
+    }),
     addBIM: function() {
         const source = new Cesium.GeoJsonDataSource({
             name: 'BIM'
@@ -307,6 +313,35 @@ providers.entities = {
                         viewer.entities.add({
                             parent: this.bim,
                             polygon: entity.polygon,
+                            properties: entity.properties,
+                            name: entity.properties.naam,
+                            description: loadingDescription
+                        });
+                    }
+                }.bind(this)
+            );
+    },
+    addBrugErasmusgracht: function() {
+        const source = new Cesium.GeoJsonDataSource({
+            name: 'brugErasmusgracht'
+        });
+
+        source
+            .load('../data/features/burg_erasmusgracht.json', {
+                clampToGround: true
+            })
+            .then(
+                function() {
+                    for (let entity of source.entities.values) {
+                        viewer.entities.add({
+                            parent: this.brugErasmusgracht,
+                            point: new Cesium.PointGraphics({
+                                color: Cesium.Color.RED,
+                                pixelSize: 1,
+                                heightReference: Cesium.HeightReference.RELATIVE_TO_GROUND,
+                                scaleByDistance: new Cesium.NearFarScalar(1.5e2, 10, 1.5e7, 0.0)
+                            }),
+                            position: entity.position,
                             properties: entity.properties,
                             name: entity.properties.naam,
                             description: loadingDescription
