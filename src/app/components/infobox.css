@@ -6,7 +6,7 @@
 }
 
 .cesium-infoBox-description a:hover {
-  color: #303336;
+    color: #303336;
 }
 
 .simplebar-scroll-content {
@@ -20,7 +20,7 @@
 }
 
 .loading {
-    text-align: center
+    text-align: center;
 }
 
 .wrap {
@@ -33,14 +33,14 @@
     margin: 0px;
     padding: 0;
     box-sizing: border-box;
-  }
+}
 
-  body {
+body {
     font-family: Verdana, Arial, sans-serif;
     color: #333;
-  }
+}
 
-  table {
+table {
     font-size: small;
     background: #303336;
     text-align: left;
@@ -50,50 +50,85 @@
     /* border: 2px solid #48b; */
     width: 100%;
     /* margin: 50px auto; */
-    border-radius: .25rem;
-  }
+    border-radius: 0.25rem;
+}
 
-  .subject-title {
-    background-color: #16a085
-  }
+.subject-title {
+    background-color: #16a085;
+}
 
-  .graph-title {
-    background-color: #48b
-  }
+.graph-title {
+    background-color: #48b;
+}
 
-  thead tr:first-child {
+thead tr:first-child {
     /* background: #48b; */
     color: #fff;
     border: none;
-  }
+}
 
-  td {
-    max-width: 80px;
-  }
+td {
+    max-width: 200px;
+}
+td span {
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
 
-  th:first-child,
-  td:first-child {
+th:first-child,
+td:first-child {
     padding: 0 8px 0 10px;
-  }
+}
 
-  thead tr:last-child th {
+thead tr:last-child th {
     border-bottom: 3px solid #ddd;
-  }
+}
 
-  tbody tr:hover {
+tbody tr:hover {
     background-color: #f2f2f2;
     cursor: default;
     color: #303336 !important;
-  }
+}
+tbody tr:hover a {
+    color: #303336 !important;
+}
 
-  tbody tr:last-child td {
+tbody tr:last-child td {
     border: none;
-  }
+}
 
-  tbody td {
+tbody td {
     border-bottom: 1px solid #ddd;
-  }
+}
 
-  td:last-child {
+td:last-child {
     padding-right: 0px;
-  }
+}
+
+/* Tooltip container */
+.tooltip {
+    position: relative;
+    display: inline-block;
+}
+
+/* Tooltip text */
+.tooltip .tooltiptext {
+    visibility: hidden;
+    width: 200px;
+    background-color: black;
+    color: #fff;
+    text-align: center;
+    padding: 5px 0;
+    border-radius: 6px;
+
+    position: absolute;
+    top: -5px;
+    right: 105%;
+    z-index: 9;
+}
+
+/* Show the tooltip text when you mouse over the tooltip container */
+.tooltip:hover .tooltiptext {
+    visibility: visible;
+}
